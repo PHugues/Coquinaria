@@ -1,0 +1,9 @@
+{
+    "name": "coquinaria",
+    "version": "0.1.0",
+    "dependencies": {
+
+    },
+    "author": "Pierre Hugues",
+    "description": "Webpage to add elements to the database."
+}
