@@ -1,8 +1,27 @@
 import mysql.connector
 from mysql.connector import Error
+from configparser import ConfigParser
 
-hostDb = 'rds-mysql-huguesp.col4kuvwn0jf.eu-west-3.rds.amazonaws.com'
-nameDb = 'coquinaria'
+
+def read_conf(filename='config.ini', section='mysql'):
+    """ Read the file that contains the configuration for the
+    database and return a dictionnary.
+    :param filename: the name of the file
+    :param section: the section of the configuration
+    :return: a dictionnary of parameters
+    """
+    parser = ConfigParser()
+    parser.read(filename)
+
+    db = {}
+    if parser.has_section(section):
+        items = parser.items(section)
+        for item in items:
+            db[item[0]] = item[1]
+    else:
+        raise Exception('{} not found in the file {}.'
+                        .format(section, filename))
+    return db
 
 
 def connect(userDb, passwordDb):
@@ -12,6 +31,9 @@ def connect(userDb, passwordDb):
     :return: the connection to the database
     """
     try:
+        db_conf = read_conf()
+        hostDb = db_conf['hostdb']
+        nameDb = db_conf['namedb']
         print('Attempting to connect to {}.'.format(hostDb))
         conn = mysql.connector.connect(host=hostDb,
                                        database=nameDb,
@@ -30,7 +52,7 @@ def disconnect(conn):
     :param: the connection to the database
     """
     try:
-        print('Attempting to disconnect from {}.'.format(hostDb))
+        print('Attempting to disconnect from the database.')
         conn.close()
         if conn.is_connected() is False:
             print('Disconnected from the database.')
