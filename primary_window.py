@@ -3,6 +3,7 @@
 
 from tkinter import Frame, Tk, Button, CENTER, NSEW, font
 import os
+import utils
 
 
 class Window(Frame):
@@ -14,13 +15,15 @@ class Window(Frame):
         self.state = True
         self.tk.bind("<F11>", self.toggle_fullscreen)
         self.tk.bind("<Escape>", self.end_fullscreen)
-        font.nametofont('TkDefaultFont').configure(size=20)
 
-        B1 = Button(self.tk, text="Coquinaria", command=self.coquinaria)
+        B1 = Button(self.tk, text="Coquinaria", command=self.coquinaria,
+                    font=utils.HUGE_FONT)
         B1.grid(row=1, column=1, sticky=NSEW)
-        B2 = Button(self.tk, text="Cognatio", command=self.cognatio)
+        B2 = Button(self.tk, text="Cognatio", command=self.cognatio,
+                    font=utils.HUGE_FONT)
         B2.grid(row=2, column=1, sticky=NSEW)
-        B3 = Button(self.tk, text="Quitter", command=self.exit)
+        B3 = Button(self.tk, text="Quitter", command=self.exit,
+                    font=utils.HUGE_FONT)
         B3.grid(row=3, column=1, sticky=NSEW)
 
         self.tk.grid_rowconfigure(0, weight=1)
@@ -38,7 +41,7 @@ class Window(Frame):
 
     def cognatio(self):
         """Execute cognatio"""
-        self.exit()
+        utils.popupmsg("Pas encore implémenté")
         # os.system('python3 cognatio/cognatio.py')
 
     def toggle_fullscreen(self, event=None):
