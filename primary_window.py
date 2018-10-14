@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from tkinter import Frame, Tk, Button, CENTER, NSEW
+from tkinter import Frame, Tk, Button, CENTER, NSEW, font
 import os
 
 
@@ -12,10 +12,10 @@ class Window(Frame):
         self.tk.attributes('-fullscreen', True)
         self.frame = Frame(self.tk)
         self.tk.title("Choix Application")
-        self.frame.pack()
         self.state = True
         self.tk.bind("<F11>", self.toggle_fullscreen)
         self.tk.bind("<Escape>", self.end_fullscreen)
+        font.nametofont('TkDefaultFont').configure(size=20)
 
         B1 = Button(self.frame, text="Coquinaria", command=self.coquinaria)
         B1.grid(row=1, column=1, sticky=NSEW)
@@ -25,7 +25,7 @@ class Window(Frame):
         B3.grid(row=3, column=1, sticky=NSEW)
 
         self.frame.grid_rowconfigure(0, weight=1)
-        self.frame.grid_rowconfigure(5, weight=1)
+        self.frame.grid_rowconfigure(4, weight=1)
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_columnconfigure(2, weight=1)
 
