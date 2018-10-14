@@ -10,26 +10,25 @@ class Window(Frame):
     def __init__(self):
         self.tk = Tk()
         self.tk.attributes('-fullscreen', True)
-        self.frame = Frame(self.tk)
         self.tk.title("Choix Application")
         self.state = True
         self.tk.bind("<F11>", self.toggle_fullscreen)
         self.tk.bind("<Escape>", self.end_fullscreen)
         font.nametofont('TkDefaultFont').configure(size=20)
 
-        B1 = Button(self.frame, text="Coquinaria", command=self.coquinaria)
+        B1 = Button(self.tk, text="Coquinaria", command=self.coquinaria)
         B1.grid(row=1, column=1, sticky=NSEW)
-        B2 = Button(self.frame, text="Cognatio", command=self.cognatio)
+        B2 = Button(self.tk, text="Cognatio", command=self.cognatio)
         B2.grid(row=2, column=1, sticky=NSEW)
-        B3 = Button(self.frame, text="Quitter", command=self.exit)
+        B3 = Button(self.tk, text="Quitter", command=self.exit)
         B3.grid(row=3, column=1, sticky=NSEW)
 
-        self.frame.grid_rowconfigure(0, weight=1)
-        self.frame.grid_rowconfigure(4, weight=1)
-        self.frame.grid_columnconfigure(0, weight=1)
-        self.frame.grid_columnconfigure(2, weight=1)
+        self.tk.grid_rowconfigure(0, weight=1)
+        self.tk.grid_rowconfigure(4, weight=1)
+        self.tk.grid_columnconfigure(0, weight=1)
+        self.tk.grid_columnconfigure(2, weight=1)
 
-        for child in self.frame.winfo_children():
+        for child in self.tk.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
     def coquinaria(self):
