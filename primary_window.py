@@ -3,7 +3,7 @@
 
 from tkinter import Frame, Tk, Button, CENTER, NSEW, font
 import os
-import utils
+from coquinaria.utils import *
 
 
 class Window(Frame):
@@ -13,17 +13,23 @@ class Window(Frame):
         self.tk.attributes('-fullscreen', True)
         self.tk.title("Choix Application")
         self.state = True
-        self.tk.bind("<F11>", self.toggle_fullscreen)
-        self.tk.bind("<Escape>", self.end_fullscreen)
+        self.tk.bind("<F11>", lambda _: toggle_fullscreen(self))
+        self.tk.bind("<Escape>", lambda _: end_fullscreen(self))
 
-        B1 = Button(self.tk, text="Coquinaria", command=self.coquinaria,
-                    font=utils.HUGE_FONT)
+        B1 = Button(self.tk,
+                    text="Coquinaria",
+                    command=self.coquinaria,
+                    font=HUGE_FONT)
         B1.grid(row=1, column=1, sticky=NSEW)
-        B2 = Button(self.tk, text="Cognatio", command=self.cognatio,
-                    font=utils.HUGE_FONT)
+        B2 = Button(self.tk,
+                    text="Cognatio",
+                    command=self.cognatio,
+                    font=HUGE_FONT)
         B2.grid(row=2, column=1, sticky=NSEW)
-        B3 = Button(self.tk, text="Quitter", command=self.exit,
-                    font=utils.HUGE_FONT)
+        B3 = Button(self.tk,
+                    text="Quitter",
+                    command=lambda: exit(self),
+                    font=HUGE_FONT)
         B3.grid(row=3, column=1, sticky=NSEW)
 
         self.tk.grid_rowconfigure(0, weight=1)
@@ -36,30 +42,13 @@ class Window(Frame):
 
     def coquinaria(self):
         """Execute coquinaria"""
-        self.exit()
+        exit(self)
         os.system('python3 coquinaria/coquinaria.py')
 
     def cognatio(self):
         """Execute cognatio"""
-        utils.popupmsg("Pas encore implémenté")
+        popupmsg("Pas encore implémenté")
         # os.system('python3 cognatio/cognatio.py')
-
-    def toggle_fullscreen(self, event=None):
-        """Toggle fullscreen mod when pressed F11"""
-        self.state = not self.state  # Just toggling the boolean
-        self.tk.attributes("-fullscreen", self.state)
-        return "break"
-
-    def end_fullscreen(self, event=None):
-        """End fullscreen mod when pressed ESC"""
-        self.state = False
-        self.tk.attributes("-fullscreen", False)
-        self.tk.attributes("-zoomed", True)
-        return "break"
-
-    def exit(self):
-        """Close the window"""
-        self.tk.destroy()
 
 w = Window()
 w.mainloop()
