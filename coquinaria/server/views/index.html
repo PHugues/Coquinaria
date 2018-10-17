@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+        <link rel="stylesheet" href="css/style.css" /> 
+		<title>Coquinaria</title>
+		<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+	</head>
+
+	<body>
+		<header>
+			<div id="header"></div>
+		</header>
+
+		<div id="formulaire">
+			<h1>Nouvelle recette</h1>
+			<form method="post" action="/createRec">
+				<p>
+					<label for="cat_rec">- Catégorie de recette</label> :
+					<select name="cat_rec">
+						<option value="entrees">Entrées</option>
+						<option value="plats">Plats</option>
+						<option value="biscuits">Biscuits</option>
+						<option value="gateaux">Gâteaux</option>
+						<option value="boulangerie">Boulangerie</option>
+						<option value="sauces">Sauces</option>
+					</select>
+				</p>
+				<p>
+					<label for="nom_recette">- Nom de la recette</label> : <input type="text" name="nom_recette" placeholder="Ex : poulet au curry" required/>
+				</p>
+				<p>
+					<label for="temps">- Temps de préparation</label> : <input type="number" name="temps" placeholder="Ex : 5" required/> min
+				</p>
+				<p id="ing">
+					- Ingrédients : <br /><br />
+					<button type="button" id="add_ing">Ajouter nouvel ingrédient</button>
+					<br /><br />
+					<input type="text" name="qte_ing" placeholder="3" size="2" required/>	<input type="text" name="nom_ing" placeholder="courgettes" required/>
+					<br /><br />
+				</p>
+				<p>
+					<label for="instr">- Instructions</label> : <br /><br />
+					<textarea name="inst" required></textarea>
+				</p>
+				<p>
+					<input type="submit" value="Valider" />
+				</p>
+			</form>
+		</div>
+
+		<script>
+			$(document).ready(function() {
+				$('#header').load('./navbar.html');
+			});
+			$('#add_ing').click(function() {
+				var html = "<input type=\"text\" name=\"qte_ing\" placeholder=\"3\" size=\"2\" required/>	<input type=\"text\" name=\"nom_ing\" placeholder=\"courgettes\" required/>" +
+					"<br /><br />";
+				$('#ing').append(html);
+			});
+		</script>
+	</body>
+</html>
