@@ -46,3 +46,12 @@ textarea {
     width: 50%;
     height: 300px;
 }
+
+.signup {
+    text-align: center;
+}
+
+.error_credentials {
+    color: red;
+    font-style: italic;
+}

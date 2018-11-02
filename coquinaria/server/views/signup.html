@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 
     <html>
 
@@ -14,7 +14,7 @@
         <meta name="msapplication-config" content="img/browserconfig.xml">
         <meta name="theme-color" content="#ffffff">
         <link rel="stylesheet" href="css/style.css" />
-        <title>Coquinaria - Connexion</title>
+        <title>Coquinaria - Inscription</title>
         <script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
     </head>
 
@@ -23,17 +23,26 @@
             <h1 id="title">
                 <a class="route" href="./">Coquinaria</a>
             </h1>
-            <hr/>
+            <hr />
         </header>
 
         <div>
-            <h1>Connexion</h1>
-            <form id="signup" method="post" action="/login">
+            <h1>Inscription</h1>
+            <form id="signup" method="post" action="/signup">
+                <p>
+                    <label for="nom">Nom</label> : <input type="text" name="nom" required/>
+                </p>
+                <p>
+                    <label for="prenom">Prénom</label> : <input type="text" name="prenom" required/>
+                </p>
                 <p>
                     <label for="mail">Email</label> : <input type="email" name="mail" required/>
                 </p>
                 <p>
                     <label for="pass">Mot de passe</label> : <input type="password" name="pass" required/>
+                </p>
+                <p>
+                    <label for="pass2">Confirmer le mot de passe</label> : <input type="password" name="pass2" required/>
                 </p>
                 <p>
                     <input type="submit" value="Valider" />
@@ -44,9 +53,6 @@
                     <p><%= message %></p>
                 </div>
             <% } %>
-            <p>
-                Je n'ai pas encore de compte. <a href="/signup">Créer un compte</a>
-            </p>
         </div>
     </body>
 
