@@ -13,6 +13,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.engine('.html', require('ejs').__express);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
+app.use(function(req, res) {
+	res.status(404).render('404');
+});
 
 var server = app.listen(8080, function() {
 	try {
