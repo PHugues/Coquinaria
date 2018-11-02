@@ -1,3 +1,4 @@
 config.ini
 coquinaria/server/node_modules
+coquinaria/server/log
 .vscode/launch.json

@@ -1,39 +1,24 @@
-var http = require('http');
-var url = require('url');
-var io = require('socket.io');
 var express = require('express');
-var fs = require('fs');
 var path = require('path');
+var bodyParser = require('body-parser');
+var log4js = require('log4js');
 
+log4js.configure('./coquinaria/server/config/log4js.json');
 var app = express();
-var server = http.createServer(app);
-var socket = io.listen(server);
+var logger = log4js.getLogger();
 
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(require('./routes/routes'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('.html', require('ejs').__express);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 
-app.get('/', function(req, res){
-    res.render('index');
+var server = app.listen(8080, function() {
+	try {
+		logger.info("HTTP server listening on port 8080");
+	}
+	catch(e) {
+		logger.error(e);
+	}
 });
-
-app.get('/recettes', function(req, res) {
-	res.render('recette');
-});
-
-app.get('/menu', function(req, res) {
-	res.render('menu');
-})
-
-app.get('/navbar.html', function(req, res) {
-	res.render('navbar');
-});
-
-app.post('/createRec', function(req, res) {
-	console.log(req.body);
-	res.redirect('/');
-});
-
-app.listen(8080);
-console.log('Server started.');
