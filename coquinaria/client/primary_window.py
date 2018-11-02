@@ -3,7 +3,7 @@
 
 from tkinter import Frame, Tk, Button, CENTER, NSEW, font
 import os
-from coquinaria.utils import *
+from utils import *
 
 
 class Window(Frame):
