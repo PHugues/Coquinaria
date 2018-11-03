@@ -4,6 +4,7 @@ global.jwt = require('jsonwebtoken');
 global.cookie = require('cookie')
 var user = require('./user');
 var DB = require('../config/config');
+global.bcrypt = require('bcrypt');
 
 global.token;
 var router = express.Router();
