@@ -1,12 +1,10 @@
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
-var log4js = require('log4js');
 var cors = require('cors');
+var config = require('./config/config');
 
-log4js.configure('./coquinaria/server/config/log4js.json');
 var app = express();
-var logger = log4js.getLogger();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(require('./routes/routes'));
@@ -16,10 +14,12 @@ app.engine('.html', require('ejs').__express);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 
+//Redirect to 404 if page doesn't exist
 app.use(function(req, res) {
 	res.status(404).render('404');
 });
 
+//Launch server
 var server = app.listen(8080, function() {
 	logger.info("HTTP server listening on port 8080");
 });
