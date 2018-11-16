@@ -122,7 +122,8 @@ exports.logout = function(req, res) {
 exports.create = function(req, res) {
     if(req.method == "POST") {
         logger.info("Request send from [" + req.ip + "]");
-        requestLogger.info("From [" + req.ip + "] Request :\n" + JSON.stringify(req.body));
+        requestLogger.info("From [" + req.ip + "] Data :\n" + JSON.stringify(req.body));
+        addRecipe(req.body);
         res.redirect('/');
     } else {
         var cookies = cookie.parse(req.headers.cookie || '');
@@ -185,3 +186,95 @@ function exist(mail) {
         });
     });
 }
+
+//Add a recipe to the database
+function addRecipe(data) {
+    //Parse the data send
+    var nameRecipe = data.nom_recette;
+    var timeRecipe = data.temps;
+    var catRecipe;
+    switch(data.cat_rec) {
+        case "entrees": {
+            catRecipe = 1;
+            break;
+        }
+        case "plats": {
+            catRecipe = 2;
+            break;
+        }
+        case "biscuits": {
+            catRecipe = 3;
+            break;
+        }
+        case "gateaux": {
+            catRecipe = 4;
+            break;
+        }
+        case "boulangerie": {
+            catRecipe = 5;
+            break;
+        }
+        case "sauces": {
+            catRecipe = 6;
+            break;
+        }
+        default: {
+            catRecipe = 0;
+            break;
+        }
+    }
+    var ings = [];
+    for(var i = 0 ; i < data.nom_ing.length ; i++) {
+        ings.push({ing: data.nom_ing[i], qte: data.qte_ing[i]});
+    }
+    var instruction = data.inst;
+
+    return new Promise((resolve, reject) => {
+        //Insert the recipe in the database
+        var sql = "INSERT INTO `REC` (`LABBREC`, `NUMCATREC`, `TPSREC`, `TXTREC`) VALUES('" +
+                nameRecipe + "', " + catRecipe + ", " + timeRecipe + ", \"" + instruction + "\")";
+        requestLogger.info(sql);
+        db.query(sql, function(err, result) {
+            if(err) reject(err);
+            else {
+                resolve();
+            }
+        });
+    }).then((resolve, reject) => {
+        //Check if the ingredients already exists, if not add them to the ingredients database
+        //and then add them to the list of ingredients for the recipe.
+        const start = async() => {
+            await asyncForEach(ings, async (ing) => {
+                var sql = "SELECT * FROM `ING` WHERE `LABING`='" + ing.ing + "';"
+                db.query(sql, function(err, result) {
+                    if(err) reject(err);
+                    else {
+                        if(result.length == 0) {
+                            var sqlInsert = "INSERT INTO `ING` (`LABING`) VALUES ('" + ing.ing + "')";
+                            db.query(sqlInsert, function(err, result) {
+                                if(err) reject(err);
+                                else {
+                                    var sqlIns = "INSERT INTO `INGREC` (`QTEING`) "
+                                }
+                            });
+                        } else {
+
+                        }
+                    }
+                });
+            });
+        };
+        start();
+    }).then((resolve, reject) => {
+
+    });
+
+
+}
+
+//Async loop
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array)
+    }
+  }
