@@ -229,7 +229,8 @@ function addRecipe(data) {
     }
     var instruction = data.inst;
 
-    return new Promise((resolve, reject) => {
+    Promise.resolve()
+    .then(() => { return new Promise((resolve, reject) => {
         //Insert the recipe in the database
         var sql = "INSERT INTO `REC` (`LABBREC`, `NUMCATREC`, `TPSREC`, `TXTREC`) VALUES('" +
                 nameRecipe + "', " + catRecipe + ", " + timeRecipe + ", \"" + instruction + "\")";
@@ -240,7 +241,8 @@ function addRecipe(data) {
                 resolve();
             }
         });
-    }).then((resolve, reject) => {
+    });})
+    .then(() => { return new Promise((resolve, reject) => {
         //Check if the ingredients already exists, if not add them to the ingredients database
         //and then add them to the list of ingredients for the recipe.
         const start = async() => {
@@ -258,18 +260,20 @@ function addRecipe(data) {
                                 }
                             });
                         } else {
-
+    
                         }
                     }
                 });
             });
         };
         start();
-    }).then((resolve, reject) => {
-
+    });})
+    .then (succes => {
+       onComplete({ result: true });
+    },
+    err => {
+       onComplete({ result: false, error: err.message || err.error || err});
     });
-
-
 }
 
 //Async loop

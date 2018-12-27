@@ -1,0 +1,40 @@
+Create :
+
+
+- Selon valeur combo : récupérer CATREC.NUMCATREC
+- INSERT INTO REC(LABREC, NUMCATREC, TPSREC, TXTREC) VALUES
+('Curry', 2, 60, "blablabla")
+- Ajouter les ingrédients 
+	-> Format double tableau à la récup
+	-> Vérifier pour chaque valeur si l'ingrédient est déjà dans la table ING
+		-> Si non
+			-> Ajouter à la table ING 
+				INSERT INTO ING(LABING) VALUES ('Poulet');
+			-> Ajouter l'ingrédient à la table INGREC
+				INSERT INTO INGREC(QTEING) VALUES (3);
+		-> Si oui
+			-> Ajouter l'ingrédient à la table INGREC
+				INSERT INTO INGREC(QTEING) VALUES (3);
+	-> Récupérer numéro de recette et numéro d'ing
+
+
+
+
+Exemples de requêtes :
+
+- Affiche toutes les recettes de la catégorie "plat" (CATREC.NUMCATREC = 2)
+
+SELECT REC.LABREC, REC.TPSREC, CATREC.LABCATREC, REC.TXTREC
+FROM REC, CATREC
+WHERE CATREC.NUMCATREC = 2
+AND REC.NUMCATREC = CATREC.NUMCATREC
+
+- Affiche tous les ingrédients de la recette "Curry" (REC.NUMREC = 1)
+
+SELECT ING.LABING, INGREC.QTEINGREC
+FROM INGREC, ING, REC
+WHERE REC.NUMREC = 1
+AND REC.NUMREC = INGREC.NUMREC
+AND ING.NUMING = INGREC.NUMING
+
+
