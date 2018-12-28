@@ -20,7 +20,7 @@ exports.index = function(req, res) {
 exports.signup = async function(req, res) {
     var message = "";
     if(req.method == "POST") {
-        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
         var data = req.body;
         if(data.pass != data.pass2) {
             message = "Les mots de passes doivent correspondre."
@@ -66,7 +66,7 @@ exports.login = async function(req, res) {
         var data = req.body;
         var mail = data.mail;
         var password = data.pass;
-        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
         exist(mail).then(function (personn) {
             bcrypt.compare(password, personn.PASSWORD, function(err, resHash) {
                 if(resHash) {;
@@ -108,7 +108,7 @@ exports.logout = function(req, res) {
         var cookies = cookie.parse(req.headers.cookie || '');
         var token = cookies.token;
         var personn = JSON.parse(cookies.personn);
-        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
         if (token && token != "null") {
             jwt.verify(token, process.env.SECRET_KEY, function(err) {
                 if (!err) {
@@ -129,7 +129,7 @@ exports.create = function(req, res) {
     if(req.method == "POST") {
         var cookies = cookie.parse(req.headers.cookie || '');
         var personn = JSON.parse(cookies.personn);
-        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
         logger.info("Request send from [" + ip + "]");
         logger.info("From [" + ip + "] Data :\n" + JSON.stringify(req.body));
         var data = req.body;
@@ -152,7 +152,7 @@ exports.create = function(req, res) {
 
 //List of recipes
 exports.recettes = function(req, res) {
-    if(req.method == "POST") {
+    if(req.method == "POST") {  
         //
     } else {
         var cookies = cookie.parse(req.headers.cookie || '');
