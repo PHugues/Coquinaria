@@ -20,6 +20,7 @@ exports.index = function(req, res) {
 exports.signup = async function(req, res) {
     var message = "";
     if(req.method == "POST") {
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
         var data = req.body;
         if(data.pass != data.pass2) {
             message = "Les mots de passes doivent correspondre."
@@ -27,7 +28,7 @@ exports.signup = async function(req, res) {
         } else {
             exist(data.mail).then(function (success) {
                     message = "Cette adresse existe déjà, veuillez réessayer.";
-                    logger.error("Register attempt from [" + req.ip + "] failed.");
+                    logger.error("Register attempt from [" + ip + "] failed.");
                     res.render('signup', {message: message});
             }, function(err) {
                 if(!err) {
@@ -42,7 +43,7 @@ exports.signup = async function(req, res) {
                                     res.render('signup', {message: message});
                                 } else {
                                     message = "Une erreur est survenue, veuillez contacter le support.";
-                                    logger.error("Register attempt from [" + req.ip + "] failed.");
+                                    logger.error("Register attempt from [" + ip + "] failed.");
                                     res.render('signup', {message: message});
                                 }
                             });
@@ -65,10 +66,11 @@ exports.login = async function(req, res) {
         var data = req.body;
         var mail = data.mail;
         var password = data.pass;
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
         exist(mail).then(function (personn) {
             bcrypt.compare(password, personn.PASSWORD, function(err, resHash) {
                 if(resHash) {;
-                    httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Connected from [" + req.ip + "].");
+                    httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Connected from [" + ip + "].");
                     token = jwt.sign(JSON.parse(JSON.stringify(personn)), process.env.SECRET_KEY, {
                         expiresIn: 3600
                     });
@@ -82,14 +84,14 @@ exports.login = async function(req, res) {
                     res.redirect('create');
                 } else {
                     message = "Mot de passe incorrect, veuillez réessayer.";
-                    logger.error("Connection attempt from [" + req.ip + "] failed. (wrong password)");
+                    logger.error("Connection attempt from [" + ip + "] failed. (wrong password)");
                     res.render('index', {message: message});
                 }
             });
         }, function(err) {
             if(!err) {
                 message = "Adresse inexistante.";
-                httpLogger.error("Connection attempt from [" + req.ip + "] failed. (adress doesn't exist)");
+                httpLogger.error("Connection attempt from [" + ip + "] failed. (adress doesn't exist)");
                 res.render('index', {message: message});
             } else {
                 logger.error(err);
@@ -106,6 +108,7 @@ exports.logout = function(req, res) {
         var cookies = cookie.parse(req.headers.cookie || '');
         var token = cookies.token;
         var personn = JSON.parse(cookies.personn);
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
         if (token && token != "null") {
             jwt.verify(token, process.env.SECRET_KEY, function(err) {
                 if (!err) {
@@ -113,7 +116,7 @@ exports.logout = function(req, res) {
                     cookiesRes.push(cookie.serialize('token', cookies.token, {expires: new Date()}));
                     cookiesRes.push(cookie.serialize('personn', cookies.personne,  {expires: new Date()}));
                     res.setHeader('Set-Cookie', cookiesRes);
-                    httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Disconnected from [" + req.ip + "].");
+                    httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Disconnected from [" + ip + "].");
                 }
             });
         }
@@ -126,8 +129,9 @@ exports.create = function(req, res) {
     if(req.method == "POST") {
         var cookies = cookie.parse(req.headers.cookie || '');
         var personn = JSON.parse(cookies.personn);
-        logger.info("Request send from [" + req.ip + "]");
-        logger.info("From [" + req.ip + "] Data :\n" + JSON.stringify(req.body));
+        var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+        logger.info("Request send from [" + ip + "]");
+        logger.info("From [" + ip + "] Data :\n" + JSON.stringify(req.body));
         var data = req.body;
         data["NUMUSR"] = personn.NUMUSR;
         addRecipe(data, function(res2) {
