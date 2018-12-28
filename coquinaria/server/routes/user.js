@@ -68,7 +68,7 @@ exports.login = async function(req, res) {
         exist(mail).then(function (personn) {
             bcrypt.compare(password, personn.PASSWORD, function(err, resHash) {
                 if(resHash) {;
-                    logger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Connected from [" + req.ip + "].");
+                    httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Connected from [" + req.ip + "].");
                     token = jwt.sign(JSON.parse(JSON.stringify(personn)), process.env.SECRET_KEY, {
                         expiresIn: 3600
                     });
@@ -89,7 +89,7 @@ exports.login = async function(req, res) {
         }, function(err) {
             if(!err) {
                 message = "Adresse inexistante.";
-                logger.error("Connection attempt from [" + req.ip + "] failed. (adress doesn't exist)");
+                httpLogger.error("Connection attempt from [" + req.ip + "] failed. (adress doesn't exist)");
                 res.render('index', {message: message});
             } else {
                 logger.error(err);
@@ -109,8 +109,11 @@ exports.logout = function(req, res) {
         if (token && token != "null") {
             jwt.verify(token, process.env.SECRET_KEY, function(err) {
                 if (!err) {
-                    res.setHeader('Set-Cookie', cookie.serialize('token', token, {expires: new Date()}));
-                    logger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Disconnected from [" + req.ip + "].");
+                    var cookiesRes = []
+                    cookiesRes.push(cookie.serialize('token', cookies.token, {expires: new Date()}));
+                    cookiesRes.push(cookie.serialize('personn', cookies.personne,  {expires: new Date()}));
+                    res.setHeader('Set-Cookie', cookiesRes);
+                    httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Disconnected from [" + req.ip + "].");
                 }
             });
         }
@@ -121,10 +124,15 @@ exports.logout = function(req, res) {
 //Create recipe
 exports.create = function(req, res) {
     if(req.method == "POST") {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var personn = JSON.parse(cookies.personn);
         logger.info("Request send from [" + req.ip + "]");
-        requestLogger.info("From [" + req.ip + "] Data :\n" + JSON.stringify(req.body));
-        addRecipe(req.body);
-        res.redirect('/');
+        logger.info("From [" + req.ip + "] Data :\n" + JSON.stringify(req.body));
+        var data = req.body;
+        data["NUMUSR"] = personn.NUMUSR;
+        addRecipe(data, function(res2) {
+            res.redirect('/');
+        });
     } else {
         var cookies = cookie.parse(req.headers.cookie || '');
         var token = cookies.token;
@@ -188,7 +196,7 @@ function exist(mail) {
 }
 
 //Add a recipe to the database
-function addRecipe(data) {
+function addRecipe(data, onComplete) {
     //Parse the data send
     var nameRecipe = data.nom_recette;
     var timeRecipe = data.temps;
@@ -224,20 +232,28 @@ function addRecipe(data) {
         }
     }
     var ings = [];
-    for(var i = 0 ; i < data.nom_ing.length ; i++) {
-        ings.push({ing: data.nom_ing[i], qte: data.qte_ing[i]});
+    if(Array.isArray(data.nom_ing)) {
+        for(var i = 0 ; i < data.nom_ing.length ; i++) {
+            ings.push({ing: data.nom_ing[i], qte: data.qte_ing[i]});
+        }
+    } else {
+        ings.push({ing: data.nom_ing, qte: data.qte_ing});
     }
     var instruction = data.inst;
+    var recID;
+    var ingID;
+    var userID = data.NUMUSR;
 
     Promise.resolve()
     .then(() => { return new Promise((resolve, reject) => {
         //Insert the recipe in the database
-        var sql = "INSERT INTO `REC` (`LABBREC`, `NUMCATREC`, `TPSREC`, `TXTREC`) VALUES('" +
-                nameRecipe + "', " + catRecipe + ", " + timeRecipe + ", \"" + instruction + "\")";
+        var sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `TXTREC`) VALUES('" +
+                nameRecipe + "', " + catRecipe + ", " + userID + ", " + timeRecipe + ", \"" + instruction + "\")";
         requestLogger.info(sql);
         db.query(sql, function(err, result) {
             if(err) reject(err);
             else {
+                recID = result.insertId;
                 resolve();
             }
         });
@@ -248,19 +264,33 @@ function addRecipe(data) {
         const start = async() => {
             await asyncForEach(ings, async (ing) => {
                 var sql = "SELECT * FROM `ING` WHERE `LABING`='" + ing.ing + "';"
+                requestLogger.info(sql);
                 db.query(sql, function(err, result) {
                     if(err) reject(err);
                     else {
                         if(result.length == 0) {
                             var sqlInsert = "INSERT INTO `ING` (`LABING`) VALUES ('" + ing.ing + "')";
+                            requestLogger.info(sqlInsert);
                             db.query(sqlInsert, function(err, result) {
                                 if(err) reject(err);
                                 else {
-                                    var sqlIns = "INSERT INTO `INGREC` (`QTEING`) "
+                                    ingID = result.insertId;
+                                    var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", " + ing.qte + ")";
+                                    requestLogger.info(sqlIns);
+                                    db.query(sqlIns, function(err, result) {
+                                        if(err) reject(err)
+                                        else resolve();
+                                    })
                                 }
                             });
                         } else {
-    
+                            ingID = result.insertId;
+                            var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", " + ing.qte + ")";
+                            requestLogger.info(sqlIns);
+                            db.query(sqlIns, function(err, result) {
+                                if(err) reject(err)
+                                else resolve();
+                            });
                         }
                     }
                 });
@@ -269,10 +299,10 @@ function addRecipe(data) {
         start();
     });})
     .then (succes => {
-       onComplete({ result: true });
+       onComplete({result: true});
     },
     err => {
-       onComplete({ result: false, error: err.message || err.error || err});
+      onComplete({result: false, error: err});
     });
 }
 

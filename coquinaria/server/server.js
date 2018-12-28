@@ -13,6 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.engine('.html', require('ejs').__express);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
+app.set('trust proxy', true);
 
 //Redirect to 404 if page doesn't exist
 app.use(function(req, res) {
