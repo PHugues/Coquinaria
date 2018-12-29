@@ -9,7 +9,7 @@ exports.index = function(req, res) {
     var personn = cookies.personn;
     if (token) {
         jwt.verify(token, process.env.SECRET_KEY, function(err) {
-            if (!err) res.redirect('/create')
+            if (!err) res.redirect('/recipes')
         });
     } else {
         res.render('index', {message: ''});
@@ -79,9 +79,9 @@ exports.login = async function(req, res) {
                     cookies.push(cookie.serialize('personn', JSON.stringify(personn)));
                     res.setHeader('Set-Cookie', cookies, {
                         httpOnly: true,
-                        maxAge: 60 * 60 //1h
+                        maxAge: 60 * 60 * 24 //24h
                     });
-                    res.redirect('create');
+                    res.redirect('/');
                 } else {
                     message = "Mot de passe incorrect, veuillez réessayer.";
                     logger.error("Connection attempt from [" + ip + "] failed. (wrong password)");
@@ -107,7 +107,7 @@ exports.logout = function(req, res) {
     }  else {
         var cookies = cookie.parse(req.headers.cookie || '');
         var token = cookies.token;
-        var personn = JSON.parse(cookies.personn);
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
         var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
         if (token && token != "null") {
             jwt.verify(token, process.env.SECRET_KEY, function(err) {
@@ -128,7 +128,7 @@ exports.logout = function(req, res) {
 exports.create = function(req, res) {
     if(req.method == "POST") {
         var cookies = cookie.parse(req.headers.cookie || '');
-        var personn = JSON.parse(cookies.personn);
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
         var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
         logger.info("Request send from [" + ip + "]");
         logger.info("From [" + ip + "] Data :\n" + JSON.stringify(req.body));
@@ -159,7 +159,139 @@ exports.recettes = function(req, res) {
         var token = cookies.token;
         if (token && token != "null") {
             jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                if (!err) res.render('menu')
+                if (!err) res.render('recette')
+            });
+        } else {
+            res.redirect('/');
+        }
+    }
+}
+
+//List of meals
+exports.meals = function(req, res) {
+    if(req.method == "POST") {  
+        //
+    } else {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var token = cookies.token;
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : "";
+        if (token && token != "null") {
+            jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                if (!err) {
+                    getRecipes("plats", personn.NUMUSR, function(res2) {
+                        res.render('meals', {data: res2.data});
+                    });
+                }
+            });
+        } else {
+            res.redirect('/');
+        }
+    }
+}
+
+//List of entrees
+exports.entrees = function(req, res) {
+    if(req.method == "POST") {  
+        //
+    } else {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var token = cookies.token;
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+        if (token && token != "null") {
+            jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                if (!err) {
+                    getRecipes("entrees", personn.NUMUSR, function(res2) {
+                        res.render('entrees', {data: res2.data});
+                    });
+                }
+            });
+        } else {
+            res.redirect('/');
+        }
+    }
+}
+
+//List of sauces
+exports.sauces = function(req, res) {
+    if(req.method == "POST") {  
+        //
+    } else {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var token = cookies.token;
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+        if (token && token != "null") {
+            jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                if (!err) {
+                    getRecipes("sauces", personn.NUMUSR, function(res2) {
+                        res.render('sauces', {data: res2.data});
+                    });
+                }
+            });
+        } else {
+            res.redirect('/');
+        }
+    }
+}
+
+//List of biscuits
+exports.biscuits = function(req, res) {
+    if(req.method == "POST") {  
+        //
+    } else {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var token = cookies.token;
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+        if (token && token != "null") {
+            jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                if (!err) {
+                    getRecipes("biscuits", personn.NUMUSR, function(res2) {
+                        res.render('biscuits', {data: res2.data});
+                    });
+                }
+            });
+        } else {
+            res.redirect('/');
+        }
+    }
+}
+
+//List of cakes
+exports.cakes = function(req, res) {
+    if(req.method == "POST") {  
+        //
+    } else {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var token = cookies.token;
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+        if (token && token != "null") {
+            jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                if (!err) {
+                    getRecipes("gateaux", personn.NUMUSR, function(res2) {
+                        res.render('cakes', {data: res2.data});
+                    });
+                }
+            });
+        } else {
+            res.redirect('/');
+        }
+    }
+}
+
+//List of breads
+exports.breads = function(req, res) {
+    if(req.method == "POST") {  
+        //
+    } else {
+        var cookies = cookie.parse(req.headers.cookie || '');
+        var token = cookies.token;
+        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+        if (token && token != "null") {
+            jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                if (!err) {
+                    getRecipes("boulangerie", personn.NUMUSR, function(res2) {
+                        res.render('breads', {data: res2.data});
+                    });
+                }
             });
         } else {
             res.redirect('/');
@@ -204,6 +336,7 @@ function addRecipe(data, onComplete) {
     //Parse the data send
     var nameRecipe = data.nom_recette;
     var timeRecipe = data.temps;
+    var description = data.description;
     var catRecipe;
     switch(data.cat_rec) {
         case "entrees": {
@@ -251,8 +384,8 @@ function addRecipe(data, onComplete) {
     Promise.resolve()
     .then(() => { return new Promise((resolve, reject) => {
         //Insert the recipe in the database
-        var sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `TXTREC`) VALUES('" +
-                nameRecipe + "', " + catRecipe + ", " + userID + ", " + timeRecipe + ", \"" + instruction + "\")";
+        var sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `DESREC`, `TXTREC`) VALUES('" +
+                nameRecipe + "', " + catRecipe + ", " + userID + ", " + timeRecipe + ", \"" + description + "\", \"" + instruction + "\")";
         requestLogger.info(sql);
         db.query(sql, function(err, result) {
             if(err) reject(err);
@@ -307,6 +440,61 @@ function addRecipe(data, onComplete) {
     },
     err => {
       onComplete({result: false, error: err});
+    });
+}
+
+//Get the recipes from one categorie
+function getRecipes(cat, numUsr, onComplete) {
+    Promise.resolve()
+    .then(() => { return new Promise((resolve, reject) => {
+        var catRecipe;
+        switch(cat) {
+            case "entrees": {
+                catRecipe = 1;
+                break;
+            }
+            case "plats": {
+                catRecipe = 2;
+                break;
+            }
+            case "biscuits": {
+                catRecipe = 3;
+                break;
+            }
+            case "gateaux": {
+                catRecipe = 4;
+                break;
+            }
+            case "boulangerie": {
+                catRecipe = 5;
+                break;
+            }
+            case "sauces": {
+                catRecipe = 6;
+                break;
+            }
+            default: {
+                catRecipe = 0;
+                break;
+            }
+        }
+        var sql = "SELECT REC.LABREC, REC.TPSREC, REC.DESREC, REC.NUMREC " +
+                    "FROM REC, CATREC, USER " +
+                    "WHERE CATREC.NUMCATREC = " + catRecipe +
+                    " AND REC.NUMUSR = " + numUsr +
+                    " AND REC.NUMCATREC = CATREC.NUMCATREC " +
+                    "AND REC.NUMUSR = USER.NUMUSR";
+        requestLogger.info(sql);
+        db.query(sql, function(err, rows) {
+            if(!err) resolve(rows);
+            else reject();
+        });        
+    });})
+    .then (succes => {
+       onComplete({ result: true, data: succes});
+    },
+    err => {
+       onComplete({ result: false, error: err.message || err.error || err});
     });
 }
 
