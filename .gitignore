@@ -1,5 +1,5 @@
 config.ini
-coquinaria/server/node_modules
-coquinaria/server/log
-coquinaria/server/config/config.js
+server/node_modules
+server/log
+server/config/config.js
 .vscode/*

@@ -415,19 +415,19 @@ function addRecipe(data, onComplete) {
         //and then add them to the list of ingredients for the recipe.
         const start = async() => {
             await asyncForEach(ings, async (ing) => {
-                var sql = "SELECT * FROM `ING` WHERE `LABING`='" + ing.ing + "';"
+                var sql = "SELECT * FROM `ING` WHERE `LABING`=\"" + ing.ing + "\";"
                 requestLogger.info(sql);
                 db.query(sql, function(err, result) {
                     if(err) reject(err);
                     else {
                         if(result.length == 0) {
-                            var sqlInsert = "INSERT INTO `ING` (`LABING`) VALUES ('" + ing.ing + "')";
+                            var sqlInsert = "INSERT INTO `ING` (`LABING`) VALUES (\"" + ing.ing + "\")";
                             requestLogger.info(sqlInsert);
                             db.query(sqlInsert, function(err, result) {
                                 if(err) reject(err);
                                 else {
                                     ingID = result.insertId;
-                                    var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", " + ing.qte + ")";
+                                    var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", \"" + ing.qte + "\")";
                                     requestLogger.info(sqlIns);
                                     db.query(sqlIns, function(err, result) {
                                         if(err) reject(err)
@@ -436,8 +436,8 @@ function addRecipe(data, onComplete) {
                                 }
                             });
                         } else {
-                            ingID = result.insertId;
-                            var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", " + ing.qte + ")";
+                            ingID = result[0]["NUMING"];
+                            var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", \"" + ing.qte + "\")";
                             requestLogger.info(sqlIns);
                             db.query(sqlIns, function(err, result) {
                                 if(err) reject(err)
@@ -451,10 +451,11 @@ function addRecipe(data, onComplete) {
         start();
     });})
     .then (succes => {
-       onComplete({result: true});
+        onComplete({result: true});
     },
     err => {
-      onComplete({result: false, error: err});
+        logger.error(err);
+        onComplete({result: false, error: err});
     });
 }
 
@@ -506,10 +507,11 @@ function getRecipes(cat, numUsr, onComplete) {
         });        
     });})
     .then (succes => {
-       onComplete({ result: true, data: succes});
+        onComplete({ result: true, data: succes});
     },
     err => {
-       onComplete({ result: false, error: err.message || err.error || err});
+        logger.error(err);
+        onComplete({ result: false, error: err.message || err.error || err});
     });
 }
 
@@ -534,10 +536,11 @@ function remRecipe(numRec, onComplete) {
         })
     });})
     .then (succes => {
-       onComplete({ result: true });
+        onComplete({ result: true });
     },
     err => {
-       onComplete({ result: false, error: err.message || err.error || err});
+        logger.error(err);
+        onComplete({ result: false, error: err.message || err.error || err});
     });
 }
 

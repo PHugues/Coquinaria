@@ -2,19 +2,19 @@
     "appenders": {
       "access": {
         "type": "dateFile",
-        "filename": "coquinaria/server/log/access.log",
+        "filename": "server/log/access.log",
         "pattern": "-yyyy-MM-dd",
         "category": "http"
       },
       "app": {
         "type": "file",
-        "filename": "coquinaria/server/log/app.log",
+        "filename": "server/log/app.log",
         "maxLogSize": 10485760,
         "numBackups": 3
       },
       "errorFile": {
         "type": "file",
-        "filename": "coquinaria/server/log/errors.log"
+        "filename": "server/log/errors.log"
       },
       "errors": {
         "type": "logLevelFilter",
@@ -23,7 +23,7 @@
       },
       "request": {
         "type" : "file",
-        "filename": "coquinaria/server/log/request.log"
+        "filename": "server/log/request.log"
       },
       "console": {
         "type": "console"
