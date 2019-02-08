@@ -57,9 +57,15 @@
         </form>
         <% if(message.length > 0) { %>
         <div class="error_credentials">
+            <% if(error) { %>
             <p class="text-danger">
                 <%= message %>
             </p>
+            <% } else { %>
+            <p class="text-info">
+                <%= message %>
+            </p>
+            <% } %>
         </div>
         <% } %>
     </div>

@@ -24,12 +24,12 @@ exports.signup = async function(req, res) {
         var data = req.body;
         if(data.pass != data.pass2) {
             message = "Les mots de passes doivent correspondre."
-            res.render('signup', {message: message});
+            res.render('signup', {message: message, error: true});
         } else {
             exist(data.mail).then(function (success) {
                     message = "Cette adresse existe déjà, veuillez réessayer.";
                     logger.error("Register attempt from [" + ip + "] failed.");
-                    res.render('signup', {message: message});
+                    res.render('signup', {message: message, error: true});
             }, function(err) {
                 if(!err) {
                     bcrypt.hash(data.pass, 10, function(err, hash) {
@@ -40,11 +40,11 @@ exports.signup = async function(req, res) {
                             db.query(sql, function(err, result) {
                                 if(!err) {
                                     message = "Compte crée. Vous pouvez désormais vous connecter.";
-                                    res.render('signup', {message: message});
+                                    res.render('signup', {message: message, error: false});
                                 } else {
                                     message = "Une erreur est survenue, veuillez contacter le support.";
                                     logger.error("Register attempt from [" + ip + "] failed.");
-                                    res.render('signup', {message: message});
+                                    res.render('signup', {message: message, error: true});
                                 }
                             });
                         }
@@ -72,25 +72,25 @@ exports.login = async function(req, res) {
                 if(resHash) {;
                     httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Connected from [" + ip + "].");
                     token = jwt.sign(JSON.parse(JSON.stringify(personn)), process.env.SECRET_KEY, {
-                        expiresIn: 3600
+                        expiresIn: 3600*24
                     });
                     var cookies = [];
                     cookies.push(cookie.serialize('token', token));
                     cookies.push(cookie.serialize('personn', JSON.stringify(personn)));
                     res.setHeader('Set-Cookie', cookies, {
                         httpOnly: true,
-                        maxAge: 60 * 60 * 24 //24h
+                        expires: new Date().addDays(1) //24h
                     });
                     res.redirect('/');
                 } else {
-                    message = "Mot de passe incorrect, veuillez réessayer.";
+                    message = "Identifiant ou mot de passe incorrect, veuillez réessayer.";
                     logger.error("Connection attempt from [" + ip + "] failed. (wrong password)");
                     res.render('index', {message: message});
                 }
             });
         }, function(err) {
             if(!err) {
-                message = "Adresse inexistante.";
+                message = "Identifiant ou mot de passe incorrect, veuillez réessayer.";
                 httpLogger.error("Connection attempt from [" + ip + "] failed. (adress doesn't exist)");
                 res.render('index', {message: message});
             } else {
@@ -316,6 +316,21 @@ exports.menu = function(req, res) {
     }
 }
 
+// Remove recipe
+exports.removeRecipe = function(req, res) {
+    if(req.method == "POST") {
+        var NUMREC = req.params.id;
+        remRecipe(NUMREC, function(res2) {
+            if(!res2.result) {
+                res.sendStatus(500);
+                res.send(res2);
+            } else {
+                res.send(res2);
+            }
+        });
+    }
+}
+
 //Check if the user exist in the database
 function exist(mail) {
     return new Promise((resolve, reject) => {
@@ -498,9 +513,43 @@ function getRecipes(cat, numUsr, onComplete) {
     });
 }
 
+function remRecipe(numRec, onComplete) {
+    Promise.resolve()
+    .then(() => { return new Promise((resolve, reject) => {
+        // Remove all ingredients
+        var sql = "DELETE FROM INGREC WHERE NUMREC=" + numRec;
+        requestLogger.info(sql);
+        db.query(sql, function(err, rows) {
+            if(!err) resolve();
+            else reject(err);
+        })
+    });})
+    .then(() => { return new Promise((resolve, reject) => {
+        // Remove the recipe
+        var sql = "DELETE FROM REC WHERE NUMREC=" + numRec;
+        requestLogger.info(sql);
+        db.query(sql, function(err, rows) {
+            if(!err) resolve();
+            else reject(err);
+        })
+    });})
+    .then (succes => {
+       onComplete({ result: true });
+    },
+    err => {
+       onComplete({ result: false, error: err.message || err.error || err});
+    });
+}
+
 //Async loop
 async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index], index, array)
     }
-  }
+}
+
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}

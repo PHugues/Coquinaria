@@ -53,8 +53,7 @@ router.get('/getRecipe/:id', function(req, res) {
 	var ingredients = [];
 	var onComplete = function(data) {
 		if(!data.result) {
-			res.sendStatus(500);
-			return res.send(data.error);
+			res.send(data.error);
 		} else {
 			res.send(data.data);
 		}
@@ -65,7 +64,7 @@ router.get('/getRecipe/:id', function(req, res) {
 		requestLogger.info(sql);
 		db.query(sql, function(err, data) {
 			if(!err) {
-				instructions = data[0]["TXTREC"];
+				data[0] && data[0]["TXTREC"] ? instructions = data[0]["TXTREC"] : reject("Aucun résultat");
 				resolve();
 			} else reject();
 		})
@@ -93,6 +92,9 @@ router.get('/getRecipe/:id', function(req, res) {
 	   onComplete({ result: false, error: err.message || err.error || err});
 	});
 });
+
+// Remove recipe
+router.post('/removeRecipe/:id', user.removeRecipe);
 
 // Display the menu
 router.get('/menu', user.menu);

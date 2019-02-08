@@ -15,5 +15,10 @@
         "socket.io": "~2.1.1"
     },
     "author": "Pierre Hugues",
-    "description": "Webpage to add elements to the database."
+    "description": "Webpage to add elements to the database.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/PHugues/Coquinaria"
+    },
+    "license": "GPL-3.0"
 }

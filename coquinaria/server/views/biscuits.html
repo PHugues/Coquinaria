@@ -4,6 +4,7 @@
 
 <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
     <link rel="apple-touch-icon" sizes="152x152" href="../img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
@@ -123,6 +124,8 @@
 
                     // Empty the list of ingredients
                     $('#ingredients').html("");
+
+                    // Add the ingredients
                     for(var i = 0 ; i < data.ingredients.length ; i++) {
                         var ing = data.ingredients[i];
                         $('#ingredients').append("<li>" + ing["amount"] + " " + ing["name"] + "</li>");
@@ -133,6 +136,19 @@
                     return true;
                 } else return false;
             });
+        }
+
+        function deleteRecipe(val) {
+            if(confirm("Souhaitez-vous vraiment supprimer cette recette ?")) {
+                var url = "/removeRecipe/" + parseInt($('#NUMREC' + val).html().trim());
+                $.ajax({url: url, async: false, method: 'POST'}, function(data) {
+                    if(data.result) {
+                        $('#NUMREC' + val).remove();
+                    } else {
+                        alert("Erreur lors de la modification");
+                    }
+                });
+            }
         }
     </script>
 </body>
