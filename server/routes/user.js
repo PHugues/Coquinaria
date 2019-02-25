@@ -394,13 +394,13 @@ function addRecipe(data, onComplete) {
     var instruction = data.inst;
     var recID;
     var ingID;
-    var userID = data.NUMUSR;
+    var userID = data.NUMUSR ? data.NUMUSR : 11;
 
     Promise.resolve()
     .then(() => { return new Promise((resolve, reject) => {
         //Insert the recipe in the database
-        var sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `DESREC`, `TXTREC`) VALUES('" +
-                nameRecipe + "', " + catRecipe + ", " + userID + ", " + timeRecipe + ", \"" + description + "\", \"" + instruction + "\")";
+        var sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `DESREC`, `TXTREC`) VALUES(\"" +
+                nameRecipe + "\", " + catRecipe + ", " + userID + ", " + timeRecipe + ", \"" + description + "\", \"" + instruction + "\")";
         requestLogger.info(sql);
         db.query(sql, function(err, result) {
             if(err) reject(err);
