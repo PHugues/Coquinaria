@@ -334,7 +334,7 @@ exports.removeRecipe = function(req, res) {
 //Check if the user exist in the database
 function exist(mail) {
     return new Promise((resolve, reject) => {
-        var sql = "SELECT * FROM `USER` WHERE `EMAIL`='" + mail + "'";
+        var sql = "SELECT * FROM `USER` WHERE `EMAIL`='" + mail + "' And `ACTIVE`=1";
         requestLogger.info(sql);
         db.query(sql, function(err, rows) {
             if(!err) {
@@ -417,35 +417,34 @@ function addRecipe(data, onComplete) {
             await asyncForEach(ings, async (ing) => {
                 var sql = "SELECT * FROM `ING` WHERE `LABING`=\"" + ing.ing + "\";"
                 requestLogger.info(sql);
-                db.query(sql, function(err, result) {
+                let result = await new Promise((resolve, reject)  =>  { db.query(sql, function(err, result) {
                     if(err) reject(err);
-                    else {
-                        if(result.length == 0) {
-                            var sqlInsert = "INSERT INTO `ING` (`LABING`) VALUES (\"" + ing.ing + "\")";
-                            requestLogger.info(sqlInsert);
-                            db.query(sqlInsert, function(err, result) {
-                                if(err) reject(err);
-                                else {
-                                    ingID = result.insertId;
-                                    var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", \"" + ing.qte + "\")";
-                                    requestLogger.info(sqlIns);
-                                    db.query(sqlIns, function(err, result) {
-                                        if(err) reject(err)
-                                        else resolve();
-                                    })
-                                }
-                            });
-                        } else {
-                            ingID = result[0]["NUMING"];
-                            var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", \"" + ing.qte + "\")";
-                            requestLogger.info(sqlIns);
-                            db.query(sqlIns, function(err, result) {
-                                if(err) reject(err)
-                                else resolve();
-                            });
-                        }
-                    }
-                });
+                    else resolve(result);
+                });});
+                if(result.length == 0) {
+                    var sqlInsert = "INSERT INTO `ING` (`LABING`) VALUES (\"" + ing.ing + "\")";
+                    requestLogger.info(sqlInsert);
+                    let result = await new Promise((resolve, reject) => { db.query(sqlInsert, function(err, result) {
+                        if(err) reject(err);
+                        else resolve(result)
+                    });});
+                    ingID = result.insertId;
+                    var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", \"" + ing.qte + "\")";
+                    requestLogger.info(sqlIns);
+                    await new Promise((resolve, reject) => { db.query(sqlIns, function(err, result) {
+                        if(err) reject(err)
+                        else resolve();
+                    });});
+                } else {
+                    ingID = result[0]["NUMING"];
+                    var sqlIns = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (" + recID + ", " + ingID + ", \"" + ing.qte + "\")";
+                    requestLogger.info(sqlIns);
+                    await new Promise((resolve, reject) => { db.query(sqlIns, function(err, result) {
+                        if(err) reject(err)
+                        else resolve();
+                    });});
+                }
+                resolve();
             });
         };
         start();
