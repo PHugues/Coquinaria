@@ -167,129 +167,27 @@ exports.recettes = function(req, res) {
     }
 }
 
-//List of meals
-exports.meals = function(req, res) {
-    if(req.method == "POST") {  
-        //
-    } else {
-        var cookies = cookie.parse(req.headers.cookie || '');
-        var token = cookies.token;
-        var personn = cookies.personn ? JSON.parse(cookies.personn) : "";
-        if (token && token != "null") {
-            jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                if (!err) {
-                    getRecipes("plats", personn.NUMUSR, function(res2) {
-                        res.render('meals', {data: res2.data});
-                    });
-                }
-            });
-        } else {
-            res.redirect('/');
+// List recipes from a categorie
+exports.recipes = function(req, res) {
+    if(req.method == "GET") {
+        var categorie = "";
+        switch(req.params.cat) {
+            case "meals": categorie = "plats"; break;
+            case "entrees": categorie = "entrees"; break;
+            case "sauces": categorie = "sauces"; break;
+            case "biscuits": categorie = "biscuits"; break;
+            case "cakes": categorie = "gateaux"; break;
+            case "breads": categorie = "boulangerie"; break;
+            default: res.render('404'); return;
         }
-    }
-}
-
-//List of entrees
-exports.entrees = function(req, res) {
-    if(req.method == "POST") {  
-        //
-    } else {
         var cookies = cookie.parse(req.headers.cookie || '');
         var token = cookies.token;
         var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
         if (token && token != "null") {
             jwt.verify(token, process.env.SECRET_KEY, function(err) {
                 if (!err) {
-                    getRecipes("entrees", personn.NUMUSR, function(res2) {
-                        res.render('entrees', {data: res2.data});
-                    });
-                }
-            });
-        } else {
-            res.redirect('/');
-        }
-    }
-}
-
-//List of sauces
-exports.sauces = function(req, res) {
-    if(req.method == "POST") {  
-        //
-    } else {
-        var cookies = cookie.parse(req.headers.cookie || '');
-        var token = cookies.token;
-        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-        if (token && token != "null") {
-            jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                if (!err) {
-                    getRecipes("sauces", personn.NUMUSR, function(res2) {
-                        res.render('sauces', {data: res2.data});
-                    });
-                }
-            });
-        } else {
-            res.redirect('/');
-        }
-    }
-}
-
-//List of biscuits
-exports.biscuits = function(req, res) {
-    if(req.method == "POST") {  
-        //
-    } else {
-        var cookies = cookie.parse(req.headers.cookie || '');
-        var token = cookies.token;
-        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-        if (token && token != "null") {
-            jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                if (!err) {
-                    getRecipes("biscuits", personn.NUMUSR, function(res2) {
-                        res.render('biscuits', {data: res2.data});
-                    });
-                }
-            });
-        } else {
-            res.redirect('/');
-        }
-    }
-}
-
-//List of cakes
-exports.cakes = function(req, res) {
-    if(req.method == "POST") {  
-        //
-    } else {
-        var cookies = cookie.parse(req.headers.cookie || '');
-        var token = cookies.token;
-        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-        if (token && token != "null") {
-            jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                if (!err) {
-                    getRecipes("gateaux", personn.NUMUSR, function(res2) {
-                        res.render('cakes', {data: res2.data});
-                    });
-                }
-            });
-        } else {
-            res.redirect('/');
-        }
-    }
-}
-
-//List of breads
-exports.breads = function(req, res) {
-    if(req.method == "POST") {  
-        //
-    } else {
-        var cookies = cookie.parse(req.headers.cookie || '');
-        var token = cookies.token;
-        var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-        if (token && token != "null") {
-            jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                if (!err) {
-                    getRecipes("boulangerie", personn.NUMUSR, function(res2) {
-                        res.render('breads', {data: res2.data});
+                    getRecipes(categorie, personn.NUMUSR, function(res2) {
+                        res.render('recipes', {data: res2.data, title: categorie.capitalize()});
                     });
                 }
             });
@@ -548,10 +446,4 @@ async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index], index, array)
     }
-}
-
-Date.prototype.addDays = function(days) {
-    var date = new Date(this.valueOf());
-    date.setDate(date.getDate() + days);
-    return date;
 }

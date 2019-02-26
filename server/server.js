@@ -3,6 +3,7 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var config = require('./config/config');
+var proto  = require('./library/prototype');
 
 var app = express();
 

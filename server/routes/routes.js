@@ -20,31 +20,9 @@ router.post('/create', user.create);
 
 // Display of all recipes
 router.get('/recipes', user.recettes);
-router.post('/recipes', user.recettes);
 
-// Display only the meals
-router.get('/recipes/meals', user.meals);
-router.post('/recipes/meals', user.meals);
-
-// Display only the breads
-router.get('/recipes/breads', user.breads);
-router.post('/recipes/breads', user.breads);
-
-// Display only the biscuits
-router.get('/recipes/biscuits', user.biscuits);
-router.post('/recipes/biscuits', user.biscuits);
-
-// Display only the entrees
-router.get('/recipes/entrees', user.entrees);
-router.post('/recipes/entrees', user.entrees);
-
-// Display only the sauces
-router.get('/recipes/sauces', user.sauces);
-router.post('/recipes/sauces', user.sauces);
-
-// Display only the cakes
-router.get('/recipes/cakes', user.cakes);
-router.post('/recipes/cakes', user.cakes);
+// Display a categorie
+router.get('/recipes/:cat', user.recipes);
 
 // Get a recipe
 router.get('/getRecipe/:id', function(req, res) {
