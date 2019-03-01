@@ -7,84 +7,36 @@ var router = express.Router();
 router.get('/', user.index);
 
 // Signup part of the application
-router.get('/signup', user.signup);
-router.post('/signup', user.signup);
+router.get('/inscription', user.signup);
+router.post('/inscription', user.signup);
 
 // Login part of the application
-router.get('/login', user.login);
-router.post('/login', user.login);
+router.get('/connexion', user.login);
+router.post('/connexion', user.login);
 
 // Creation of a new recipe
-router.get('/create', user.create);
-router.post('/create', user.create);
+router.get('/creerRecette', user.create);
+router.post('/creerRecette', user.create);
 
 // Display of all recipes
-router.get('/recipes', user.recettes);
+router.get('/recettes', user.recipes);
 
 // Display a categorie
-router.get('/recipes/:cat', user.recipes);
+router.get('/recettes/:cat', user.recipesCat);
 
 // Get a recipe
-router.get('/getRecipe/:id', function(req, res) {
-	var NUMREC = req.params.id;
-	var instructions;
-	var ingredients = [];
-	var onComplete = function(data) {
-		if(!data.result) {
-			res.send(data.error);
-		} else {
-			res.send(data.data);
-		}
-	};
-	Promise.resolve()
-	.then(() => { return new Promise((resolve, reject) => {
-		var sql = "SELECT REC.TXTREC FROM REC WHERE REC.NUMREC=" + NUMREC;
-		requestLogger.info(sql);
-		db.query(sql, function(err, data) {
-			if(!err) {
-				data[0] && data[0]["TXTREC"] ? instructions = data[0]["TXTREC"] : reject("Aucun résultat");
-				resolve();
-			} else reject();
-		})
-	});})
-	.then(() => { return new Promise((resolve, reject) => {
-		var sql = "SELECT ING.LABING, INGREC.QTEING " + 
-					"FROM INGREC, ING, REC " +
-					"WHERE REC.NUMREC=" + NUMREC + " " +
-					"AND REC.NUMREC = INGREC.NUMREC " +
-					"AND ING.NUMING = INGREC.NUMINGREC";
-		requestLogger.info(sql);
-		db.query(sql, function(err, data) {
-			if(!err) {
-				for(var i = 0 ; i < data.length ; i++) {
-					ingredients.push({name: data[i]["LABING"], amount: data[i]["QTEING"]});
-				}
-				resolve({instruction: instructions, ingredients: ingredients});
-			} else reject();
-		})
-	});})
-	.then (succes => {
-	   onComplete({ result: true, data: succes });
-	},
-	err => {
-	   onComplete({ result: false, error: err.message || err.error || err});
-	});
-});
+router.get('/getRecipe/:id', user.recipe);
 
 // Remove recipe
 router.post('/removeRecipe/:id', user.removeRecipe);
 
 // Display the menu
 router.get('/menu', user.menu);
-router.post('/menu', user.menu);
 
 // Logout of the app
-router.get('/logout', user.logout);
-router.post('/logout', user.logout);
+router.get('/deconnexion', user.logout);
 
 // Display the navbar
-router.get('/navbar.html', function(req, res) {
-	res.render('navbar');
-});
+router.get('/navbar.html', function(req, res) {res.render('navbar');});
 
 module.exports = router;

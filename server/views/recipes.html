@@ -52,7 +52,7 @@
                 </tr>
             </thead>
             <tbody>
-                <% if(data.length) {
+                <% if(data && data.length) {
                         for(var i = 0 ; i < data.length ; i++) { %>
                 <tr>
                     <td class="collapse" id="NUMREC<%= i%>">
@@ -132,7 +132,7 @@
                     // Add the ingredients
                     for(var i = 0 ; i < data.ingredients.length ; i++) {
                         var ing = data.ingredients[i];
-                        $('#ingredients').append("<li>" + ing["amount"] + " " + ing["name"] + "</li>");
+                        $('#ingredients').append("<li>" + ing["QTEING"] + " " + ing["LABING"] + "</li>");
                     }
 
                     $('#name').html($('#NOMREC' + val).html().trim());
