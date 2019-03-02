@@ -26,7 +26,7 @@ module.exports = {
                 message = "Les mots de passes doivent correspondre."
                 res.render('signup', {message: message, error: true});
             } else {
-                exist(data.mail).then(function (success) {
+                tools.exist(data.mail).then(function (success) {
                         message = "Cette adresse existe déjà, veuillez réessayer.";
                         logger.error("Register attempt from [" + ip + "] failed.");
                         res.render('signup', {message: message, error: true});
