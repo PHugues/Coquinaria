@@ -1,10 +1,11 @@
 var jwt = require('jsonwebtoken');
 var cookie = require('cookie');
 var bcrypt = require('bcrypt');
-var tools = require('../library/tools');
-var request = require('../library/request');
+var _Tools = require('../library/tools');
+var _Request = require('../library/request');
 
 module.exports = {
+    
     index: function(req, res) {
         let cookies = cookie.parse(req.headers.cookie || '');
         let token = cookies.token;
@@ -18,62 +19,64 @@ module.exports = {
     },
 
     signup: async function(req, res) {
-        var message = "";
+        let message = "";
         if(req.method == "POST") {
-            var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
-            var data = req.body;
-            if(data.pass != data.pass2) {
-                message = "Les mots de passes doivent correspondre."
+            let ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
+            let data = req.body;
+            if(!data.mail.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
+                message = "Adresse mail invalide.";
+                res.render('signup', {message: message, error: true});
+            }
+            else if(data.pass != data.pass2) {
+                message = "Les mots de passes doivent correspondre.";
                 res.render('signup', {message: message, error: true});
             } else {
-                tools.exist(data.mail).then(function (success) {
-                        message = "Cette adresse existe déjà, veuillez réessayer.";
-                        logger.error("Register attempt from [" + ip + "] failed.");
-                        res.render('signup', {message: message, error: true});
-                }, function(err) {
-                    if(!err) {
-                        bcrypt.hash(data.pass, 10, function(err, hash) {
+                let personn = await _Tools.getUser(data.mail);
+                if(!personn.isEmpty()) {
+                    message = "Cette adresse existe déjà, veuillez réessayer.";
+                    logger.error("Register attempt from [" + ip + "] failed.");
+                    res.render('signup', {message: message, error: true});
+                } else {
+                    bcrypt.hash(data.pass, 10, async function(err, hash) {
+                        let userID;
+                        try {
                             if(!err) {
-                                var sql = "INSERT INTO `USER` (`NOMUSR`, `PRENOMUSR`, `EMAIL`, `PASSWORD`, `CREATED`, `MODIFIED`) VALUES ('"
-                                        + data.nom + "', '" + data.prenom + "', '" + data.mail + "', '" + hash + "', CURDATE(), null)";
-                                requestLogger.info(sql);
-                                db.query(sql, function(err, result) {
-                                    if(!err) {
-                                        message = "Compte crée. Vous pouvez désormais vous connecter.";
-                                        res.render('signup', {message: message, error: false});
-                                    } else {
-                                        message = "Une erreur est survenue, veuillez contacter le support.";
-                                        logger.error("Register attempt from [" + ip + "] failed.");
-                                        res.render('signup', {message: message, error: true});
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        logger.error(err);
-                    }
-                });
+                                let sql = "INSERT INTO `USER` (`NOMUSR`, `PRENOMUSR`, `EMAIL`, `PASSWORD`, `CREATED`, `MODIFIED`) VALUES (?, ?, ?, ?, CURDATE(), null)";
+                                userID = await _Request.ExecSql(sql, [data.nom, data.prenom, data.mail, hash]);
+                                message = "Compte crée. Un mail vous a été envoyé afin de confirmer la création de votre compte.";
+                                await _Tools.sendVerif(userID, data.mail);
+                                res.render('signup', {message: message, error: false});
+                            } else res.render('signup', {message: "Veuillez contacter le support.", error: true});
+                        } catch (error) {
+                            await _Request.ExecSql("DELETE FROM USER WHERE NUMUSR=?", [userID]);
+                            res.render('signup', {message: "Veuillez contacter le support.", error: true});
+                        }
+                    });
+                }
             }
-        } else {
-            res.render('signup', {message: message});
-        }
+        } else res.render('signup', {message: message});
     },
 
     login: async function(req, res) {
-        var message = "";
+        let message = "";
         if(req.method == "POST") {
-            var data = req.body;
-            var mail = data.mail;
-            var password = data.pass;
-            var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
-            tools.exist(mail).then(function (personn) {
+            let data = req.body;
+            let mail = data.mail;
+            let password = data.pass;
+            let ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
+            let personn = await _Tools.getUser(mail);
+            if(personn.isEmpty()) {
+                message = "Identifiant ou mot de passe incorrect, veuillez réessayer.";
+                logger.error("Connection attempt from [" + ip + "] failed. (wrong password)");
+                res.render('index', {message: message});
+            } else {
                 bcrypt.compare(password, personn.PASSWORD, function(err, resHash) {
                     if(resHash) {;
                         httpLogger.info("[" + personn.NUMUSR + "- " + personn.NOMUSR.toUpperCase() + " " + personn.PRENOMUSR + "] Connected from [" + ip + "].");
                         token = jwt.sign(JSON.parse(JSON.stringify(personn)), process.env.SECRET_KEY, {
                             expiresIn: 3600*24
                         });
-                        var cookies = [];
+                        let cookies = [];
                         cookies.push(cookie.serialize('token', token));
                         cookies.push(cookie.serialize('personn', JSON.stringify(personn)));
                         res.setHeader('Set-Cookie', cookies, {
@@ -87,28 +90,20 @@ module.exports = {
                         res.render('index', {message: message});
                     }
                 });
-            }, function(err) {
-                if(!err) {
-                    message = "Identifiant ou mot de passe incorrect, veuillez réessayer.";
-                    httpLogger.error("Connection attempt from [" + ip + "] failed. (adress doesn't exist)");
-                    res.render('index', {message: message});
-                } else {
-                    logger.error(err);
-                }
-            });
+            }
         } else res.redirect('/');
     },
 
     logout: function(req, res) {
         if(req.method == "GET") {
-            var cookies = cookie.parse(req.headers.cookie || '');
-            var token = cookies.token;
-            var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-            var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let token = cookies.token;
+            let personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+            let ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
             if (token && token != "null") {
                 jwt.verify(token, process.env.SECRET_KEY, function(err) {
                     if (!err) {
-                        var cookiesRes = []
+                        let cookiesRes = []
                         cookiesRes.push(cookie.serialize('token', cookies.token, {expires: new Date()}));
                         cookiesRes.push(cookie.serialize('personn', cookies.personne,  {expires: new Date()}));
                         res.setHeader('Set-Cookie', cookiesRes);
@@ -122,17 +117,17 @@ module.exports = {
 
     create: function(req, res) {
         if(req.method == "POST") {
-            var cookies = cookie.parse(req.headers.cookie || '');
-            var personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-            var ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+            let ip = req.header('x-forwarded-for') || req.connection.remoteAddress || req.headers["X-Real-IP"];
             logger.info(`[CREATE RECIPE] From [${ip}] Data :\n${JSON.stringify(req.body)}`);
-            var data = req.body;
+            let data = req.body;
             data["NUMUSR"] = personn.NUMUSR;
-            tools.addRecipe(data);
+            _Tools.addRecipe(data);
             res.redirect('/');
         } else {
-            var cookies = cookie.parse(req.headers.cookie || '');
-            var token = cookies.token;
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let token = cookies.token;
             if (token && token != "null") {
                 jwt.verify(token, process.env.SECRET_KEY, function(err) {
                     if (!err) res.render('create')
@@ -145,8 +140,8 @@ module.exports = {
 
     recipes: function(req, res) {
         if(req.method == "GET") {  
-            var cookies = cookie.parse(req.headers.cookie || '');
-            var token = cookies.token;
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let token = cookies.token;
             if (token && token != "null") {
                 jwt.verify(token, process.env.SECRET_KEY, function(err) {
                     if (!err) res.render('recette')
@@ -159,7 +154,7 @@ module.exports = {
 
     recipesCat: async function(req, res) {
         if(req.method == "GET") {
-            let recipe = await request.FillDataRow("Select NUMCATREC, LABCATREC  From CATREC Where NAMECATREC=?", [req.params.cat]);
+            let recipe = await _Request.FillDataRow("Select NUMCATREC, LABCATREC  From CATREC Where NAMECATREC=?", [req.params.cat]);
             let categorie = recipe["LABCATREC"];
             let catRecipe = recipe["NUMCATREC"];
             let cookies = cookie.parse(req.headers.cookie || '');
@@ -168,7 +163,7 @@ module.exports = {
             if (token && token != "null") {
                 jwt.verify(token, process.env.SECRET_KEY, async function(err) {
                     if (!err) {
-                        let result = await tools.getRecipes(catRecipe, personn.NUMUSR);
+                        let result = await _Tools.getRecipes(catRecipe, personn.NUMUSR);
                         res.render('recipes', {data: result, title: categorie.capitalize()});
                     }
                 });
@@ -180,8 +175,8 @@ module.exports = {
 
     menu: function(req, res) {
         if(req.method =="GET") {
-            var cookies = cookie.parse(req.headers.cookie || '');
-            var token = cookies.token;
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let token = cookies.token;
             if (token && token != "null") {
                 jwt.verify(token, process.env.SECRET_KEY, function(err) {
                     if (!err) res.render('menu')
@@ -195,7 +190,7 @@ module.exports = {
     removeRecipe: async function(req, res) {
         if(req.method == "POST") {
             let NUMREC = parseInt(req.params.id);
-            await tools.removeRecipe(NUMREC);
+            await _Tools.removeRecipe(NUMREC);
             res.send(true);
         }
     },
@@ -203,7 +198,7 @@ module.exports = {
     recipe: async function(req, res) {
         if(req.method == "GET") {  
             let NUMREC = req.params.id;
-            let data = await tools.getRecipe(NUMREC);
+            let data = await _Tools.getRecipe(NUMREC);
             res.send(data);
         }
     }

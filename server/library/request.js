@@ -8,7 +8,7 @@ module.exports = {
     ExistSql: function(sql, params) {
         return new Promise(async (resolve, reject) => {
             try {
-                this.logRequest(sql, params);
+                this.LogRequest(sql, params);
                 let result = await new Promise((resolve, reject) => {
                     db.query(sql, params, function(err, result) {
                         if(err) reject(err);
@@ -31,7 +31,7 @@ module.exports = {
     SelectSql: function(sql, params) {
         return new Promise(async (resolve, reject) => {
             try {
-                this.logRequest(sql, params);
+                this.LogRequest(sql, params);
                 let result = await new Promise((resolve, reject) => {
                     db.query(sql, params, function(err, result) {
                         if(err) reject(err);
@@ -54,7 +54,7 @@ module.exports = {
     FillDataRow: function(sql, params) {
         return new Promise(async (resolve, reject) => {
             try {
-                this.logRequest(sql, params);
+                this.LogRequest(sql, params);
                 let result = await new Promise((resolve, reject) => {
                     db.query(sql, params, function(err, result) {
                         if(err) reject(err);
@@ -77,7 +77,7 @@ module.exports = {
     FillDataRows: function(sql, params) {
         return new Promise(async (resolve, reject) => {
             try {
-                this.logRequest(sql, params);
+                this.LogRequest(sql, params);
                 let result = await new Promise((resolve, reject) => {
                     db.query(sql, params, function(err, result) {
                         if(err) reject(err);
@@ -100,7 +100,7 @@ module.exports = {
     ExecSql: function(sql, params) {
         return new Promise(async (resolve, reject) => {
             try {
-                this.logRequest(sql, params);
+                this.LogRequest(sql, params);
                 let result = await new Promise((resolve, reject) => {
                     db.query(sql, params, function(err, result) {
                         if(err) reject(err);
@@ -120,7 +120,7 @@ module.exports = {
      * @param {String} sql SQL request
      * @param {Array<String|Number>} params Array of parameters
      */
-    logRequest: function(sql, params) {
+    LogRequest: function(sql, params) {
         let msg = "";
         let array = sql.split('?');
         for(let i = 0 ; i < (array.length - 1) ; i++) {

@@ -1,17 +1,19 @@
-var request = require('./request');
+var _Request = require('./request');
+var _Mail = require('./mail')
+var fs = require('fs');
 
 module.exports = {
 
     /**
-     * Check if the user exist in the database with his email
+     * Return the user
      * @param {String} email Mail to verify the existence
      */
-    exist: async function(email) {
+    getUser: async function(email) {
         try {
             let sql = "SELECT * FROM `USER` WHERE `EMAIL`=? AND `ACTIVE`=1";
             let params = [email];
-            let exist = await request.FillDataRow(sql, params);
-            return exist;
+            let user = await _Request.FillDataRow(sql, params);
+            return user;
         } catch (error) {
             let msg = `[exist] ${error.message || error.error || error}`;
             logger.error(msg);
@@ -29,7 +31,7 @@ module.exports = {
             let recipeName = data.nom_recette;
             let recipeTime = data.temps;
             let description = data.description;
-            let catRecipe = await request.SelectSql("SELECT NUMCATREC FROM CATREC WHERE NAMECATREC=?", [data.cat_rec]);
+            let catRecipe = await _Request.SelectSql("SELECT NUMCATREC FROM CATREC WHERE NAMECATREC=?", [data.cat_rec]);
             let instruction = data.inst;
             let userID = data.NUMUSR ? data.NUMUSR : 11;
             let ings = [];
@@ -41,22 +43,22 @@ module.exports = {
 
             //Insert the recipe in the database
             let sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `DESREC`, `TXTREC`) VALUES(?, ?, ?, ?, ?, ?)";
-            let recID = await request.ExecSql(sql, [recipeName, catRecipe, userID, recipeTime, description, instruction]);
+            let recID = await _Request.ExecSql(sql, [recipeName, catRecipe, userID, recipeTime, description, instruction]);
 
             //Check if the ingredients already exists, if not add them to the ingredients database
             //and then add them to the list of ingredients for the recipe.
             for(let ing of ings) {
                 sql = "SELECT * FROM `ING` WHERE `LABING`=?";
-                let result = await request.FillDataRow(sql, [ing.ing]);
+                let result = await _Request.FillDataRow(sql, [ing.ing]);
                 if(!result.hasOwnProperty("NUMING")) {
                     sql = "INSERT INTO `ING`(`LABING`) VALUES (?)";
-                    let ingID = await request.ExecSql(sql, [ing.ing]);
+                    let ingID = await _Request.ExecSql(sql, [ing.ing]);
                     sql = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (?, ?, ?)";
-                    await request.ExecSql(sql, [recID, ingID, ing.qte]);
+                    await _Request.ExecSql(sql, [recID, ingID, ing.qte]);
                 } else {
                     let ingID = result["NUMING"];
                     sql = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (?, ?, ?)";
-                    await request.ExecSql(sql, [recID, ingID, ing.qte]);
+                    await _Request.ExecSql(sql, [recID, ingID, ing.qte]);
                 }
             }
         } catch (error) {
@@ -79,7 +81,7 @@ module.exports = {
                     " AND REC.NUMUSR = ?" +
                     " AND REC.NUMCATREC = CATREC.NUMCATREC " +
                     "AND REC.NUMUSR = USER.NUMUSR";
-            let data = await request.FillDataRows(sql, [NUMCATREC, NUMUSR]);
+            let data = await _Request.FillDataRows(sql, [NUMCATREC, NUMUSR]);
             return data;
         } catch (error) {
             let msg = `[getRecipes] ${error.message || error.error || error}`;
@@ -96,14 +98,14 @@ module.exports = {
         try {
             // Get the instructions
             let sql = "SELECT REC.TXTREC FROM REC WHERE REC.NUMREC=?";
-            let instructions = await request.SelectSql(sql, [NUMREC]);
+            let instructions = await _Request.SelectSql(sql, [NUMREC]);
             // Get the ingredients
             sql = "SELECT ING.LABING, INGREC.QTEING " +
                     "FROM INGREC, ING, REC " +
                     "WHERE REC.NUMREC=? " +
                     "AND REC.NUMREC = INGREC.NUMREC " +
                     "AND ING.NUMING = INGREC.NUMINGREC";
-            let ingredients = await request.FillDataRows(sql, [NUMREC]);
+            let ingredients = await _Request.FillDataRows(sql, [NUMREC]);
             return {instruction: instructions, ingredients: ingredients};
         } catch (error) {
             let msg = `[getRecipe] ${error.message || error.error || error}`;
@@ -120,16 +122,37 @@ module.exports = {
         try {
             // Remove the ingredients
             let sql = "DELETE FROM INGREC WHERE NUMREC=?";
-            await request.ExecSql(sql, [NUMREC]);
+            await _Request.ExecSql(sql, [NUMREC]);
             // Remove the recipe
             sql = "DELETE FROM REC WHERE NUMREC=?";
-            await request.ExecSql(sql, [NUMREC]);
+            await _Request.ExecSql(sql, [NUMREC]);
             return;
         } catch (error) {
             let msg = `[removeRecipe] ${error.message || error.error || error}`;
             logger.error(msg);
             return msg;
         }
-    }
+    },
 
+    /**
+     * Send a verification mail to the user so he can activate his account
+     * @param {Number} NUMUSR ID of the newly created user
+     */
+    sendVerif: async function(NUMUSR, mail) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let body = await new Promise((rs, rj) => {
+                    fs.readFile(__dirname + '/../templates/mails/verif.html', 'utf8', (err, data) => {
+                        if(err) rj(err);
+                        else rs(data);
+                    });
+                });
+                await _Mail.SendMail({to: mail, subject: 'Veuillez confirmer votre adresse mail', body: body}, true);
+                resolve();
+            } catch (error) {
+                let msg = `[sendVerif] ${error.message || error.error || error}`;
+                reject(msg);
+            }
+        });
+    }
 }
