@@ -4,6 +4,7 @@ module.exports = {
     /**
      * Send an email
      * @param {Object} params Necessary parameters to send the mail
+     * - from : Sender of the mail
      * - to : Recipient of the mail (Comma separated list or an array)
      * - cc : Recipient in copy of the mail (Comma separated list or an array)
      * - bcc : Recipient in hidden copy of the mail (Comma separated list or an array)
@@ -12,11 +13,11 @@ module.exports = {
      * - attachments : Attachments of the mail (Array of attachments which are object). Check the wiki for more informations
      * @param {Boolean} isHtml If the content is html
      */
-    SendMail: function(params, isHtml) {
+    SendMail: function(params, isHtml, onComplete) {
         return new Promise(async (resolve, reject) => {
             try {
                 let mailOptions = {
-                    from: '"Coquinaria" <coquinaria@pierre-hugues.fr>',
+                    from: params & params.from ? params.from : '"Coquinaria" <coquinaria@pierre-hugues.fr>',
                     to: params && params.to ? params.to : "",
                     subject: params && params.subject ? params.subject : "",
                     cc: params && params.cc ? params.cc : "",
@@ -26,10 +27,10 @@ module.exports = {
                 isHtml ? mailOptions.html = params.body : mailOptions.text = params.body;
                 let mail = await transporter.sendMail(mailOptions);
                 logger.info(`Message sent to ${params.to}. [Subject: ${params.subject}]`);
-                resolve();
+                onComplete ? onComplete({result: true}) : resolve();
             } catch (error) {
                 let msg = `[SendMail] ${error.message || error.error || error}`;
-                reject(msg);
+                onComplete ? onComplete({result: false, error: msg}) : reject(msg);
             }
         });
     }
