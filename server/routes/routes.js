@@ -30,6 +30,10 @@ router.get('/getRecipe/:id', user.recipe);
 // Remove recipe
 router.post('/removeRecipe/:id', user.removeRecipe);
 
+// Modify recipe
+router.get('/modifierRecette/:id', user.modifyRecipe);
+router.post('/modifierRecette/:id', user.modifyRecipe);
+
 // Display the menu
 router.get('/menu', user.menu);
 

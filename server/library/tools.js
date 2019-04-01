@@ -41,12 +41,12 @@ module.exports = {
                 }
             } else ings.push({ing: data.nom_ing, qte: data.qte_ing});
 
-            //Insert the recipe in the database
+            // Insert the recipe in the database
             let sql = "INSERT INTO `REC` (`LABREC`, `NUMCATREC`, `NUMUSR`, `TPSREC`, `DESREC`, `TXTREC`) VALUES(?, ?, ?, ?, ?, ?)";
             let recID = await _Request.ExecSql(sql, [recipeName, catRecipe, userID, recipeTime, description, instruction]);
 
-            //Check if the ingredients already exists, if not add them to the ingredients database
-            //and then add them to the list of ingredients for the recipe.
+            // Check if the ingredients already exists, if not add them to the ingredients database
+            // and then add them to the list of ingredients for the recipe.
             for(let ing of ings) {
                 sql = "SELECT * FROM `ING` WHERE `LABING`=?";
                 let result = await _Request.FillDataRow(sql, [ing.ing]);
@@ -106,7 +106,12 @@ module.exports = {
                     "AND REC.NUMREC = INGREC.NUMREC " +
                     "AND ING.NUMING = INGREC.NUMINGREC";
             let ingredients = await _Request.FillDataRows(sql, [NUMREC]);
-            return {instruction: instructions, ingredients: ingredients};
+            sql = "SELECT REC.LABREC, REC.TPSREC, REC.DESREC, CATREC.NAMECATREC " +
+                    "FROM REC, CATREC " +
+                    "WHERE REC.NUMREC=? " +
+                    "AND REC.NUMCATREC = CATREC.NUMCATREC";
+            let info = await _Request.FillDataRow(sql, [NUMREC]);
+            return {instruction: instructions, ingredients: ingredients, info: info};
         } catch (error) {
             let msg = `[getRecipe] ${error.message || error.error || error}`;
             logger.error(msg);
@@ -129,6 +134,57 @@ module.exports = {
             return;
         } catch (error) {
             let msg = `[removeRecipe] ${error.message || error.error || error}`;
+            logger.error(msg);
+            return msg;
+        }
+    },
+
+    /**
+     * Modify a recipe from the database
+     * @param {Object} data Data recovered from the form and the cookies
+     */
+    modifyRecipe: async function(data) {
+        try {
+            // Parse the data send
+            let recipeName = data.nom_recette;
+            let recipeTime = data.temps;
+            let description = data.description;
+            let catRecipe = await _Request.SelectSql("SELECT NUMCATREC FROM CATREC WHERE NAMECATREC=?", [data.cat_rec]);
+            let instruction = data.inst;
+            let userID = data.NUMUSR ? data.NUMUSR : 11;
+            let recID = data.NUMREC;
+            let ings = [];
+            if(Array.isArray(data.nom_ing)) {
+                for(let i = 0 ; i < data.nom_ing.length ; i++) {
+                    ings.push({ing: data.nom_ing[i], qte: data.qte_ing[i]});
+                }
+            } else ings.push({ing: data.nom_ing, qte: data.qte_ing});
+
+            // Update the recipe in the database
+            let sql = "UPDATE `REC` SET `LABREC`=?, `NUMCATREC`=?, `NUMUSR`=?, `TPSREC`=?, `DESREC`=?, `TXTREC`=? WHERE NUMREC=" + recID;
+            await _Request.ExecSql(sql, [recipeName, catRecipe, userID, recipeTime, description, instruction]);
+
+            // Remove all the ingredients linked to the recipe and then re-add them
+            sql = "Delete FROM INGREC WHERE NUMREC=?";
+            await _Request.ExecSql(sql, [recID]);
+
+            // Re-add the ingredients
+            for(let ing of ings) {
+                sql = "SELECT * FROM `ING` WHERE `LABING`=?";
+                let result = await _Request.FillDataRow(sql, [ing.ing]);
+                if(!result.hasOwnProperty("NUMING")) {
+                    sql = "INSERT INTO `ING`(`LABING`) VALUES (?)";
+                    let ingID = await _Request.ExecSql(sql, [ing.ing]);
+                    sql = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (?, ?, ?)";
+                    await _Request.ExecSql(sql, [recID, ingID, ing.qte]);
+                } else {
+                    let ingID = result["NUMING"];
+                    sql = "INSERT INTO `INGREC` (`NUMREC`, `NUMINGREC`, `QTEING`) VALUES (?, ?, ?)";
+                    await _Request.ExecSql(sql, [recID, ingID, ing.qte]);
+                }
+            }
+        } catch (error) {
+            let msg = `[modifyRecipe] ${error.message || error.error || error}`;
             logger.error(msg);
             return msg;
         }

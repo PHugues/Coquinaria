@@ -70,6 +70,7 @@
                     <td>
                         <a class="btn btn-primary" href="#recipe" onclick="return displayRecipe(<%= i%>);"><i class="fa fa-search"></i></a>
                         <a class="btn btn-danger" href="" onclick="return deleteRecipe(<%= i%>);"><i class="fa fa-trash"></i></a>
+                        <a class="btn btn-secondary" href="/modifierRecette/<%= data[i]["NUMREC"]%>"><i class="fa fa-pen"></i></a>
                     </td>
                 </tr>
                 <% }

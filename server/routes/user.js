@@ -195,6 +195,29 @@ module.exports = {
         }
     },
 
+    modifyRecipe: function(req, res) {
+        if(req.method =="GET") {
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let token = cookies.token;
+            if (token && token != "null") {
+                jwt.verify(token, process.env.SECRET_KEY, function(err) {
+                    if (!err) res.render('modify');
+                });
+            } else {
+                res.redirect('/');
+            }
+        } else if(req.method == "POST") {
+            let cookies = cookie.parse(req.headers.cookie || '');
+            let personn = cookies.personn ? JSON.parse(cookies.personn) : {};
+            let NUMREC = parseInt(req.params.id);
+            let data = req.body;
+            data["NUMREC"] = NUMREC;
+            data["NUMUSR"] = personn.NUMUSR;
+            _Tools.modifyRecipe(data);
+            res.redirect('/');
+        }
+    },
+
     recipe: async function(req, res) {
         if(req.method == "GET") {  
             let NUMREC = req.params.id;
