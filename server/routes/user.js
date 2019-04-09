@@ -224,5 +224,13 @@ module.exports = {
             let data = await _Tools.getRecipe(NUMREC);
             res.send(data);
         }
+    },
+
+    verifyUser: async function(req, res) {
+        if(req.method =="GET") {
+            await _Request.ExecSql("UPDATE USER SET ACTIVE=1 WHERE MAILID=?", [req.query.id]);
+            await _Request.ExecSql("UPDATE USER SET MAILID=NULL WHERE MAILID=?", [req.query.id]);
+            res.redirect('/');
+        }
     }
 }

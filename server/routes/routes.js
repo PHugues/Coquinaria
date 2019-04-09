@@ -3,7 +3,7 @@ var user = require('./user');
 
 var router = express.Router();
 
-// Index of the application. Redirect to login page if not connected, redirect to create otherwise.
+// Index of the application. Redirect to login page if not connected, redirect to the list of recipes otherwise.
 router.get('/', user.index);
 
 // Signup part of the application
@@ -33,6 +33,9 @@ router.post('/removeRecipe/:id', user.removeRecipe);
 // Modify recipe
 router.get('/modifierRecette/:id', user.modifyRecipe);
 router.post('/modifierRecette/:id', user.modifyRecipe);
+
+// Verifiy the user
+router.get('/verif', user.verifyUser);
 
 // Display the menu
 router.get('/menu', user.menu);

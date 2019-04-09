@@ -197,12 +197,16 @@ module.exports = {
     sendVerif: async function(NUMUSR, mail) {
         return new Promise(async (resolve, reject) => {
             try {
+                let rand = Math.floor((Math.random() * 100) + 54);
+                await _Request.ExecSql("UPDATE USER SET MAILID=? WHERE NUMUSR=?", [rand, NUMUSR]);
+                let link = `https://coquinaria.pierre-hugues.fr/verif?id=${rand}`;
                 let body = await new Promise((rs, rj) => {
                     fs.readFile(__dirname + '/../templates/mails/verif.html', 'utf8', (err, data) => {
                         if(err) rj(err);
                         else rs(data);
                     });
                 });
+                body = body.replace("$LINK", link);
                 await _Mail.SendMail({to: mail, subject: 'Veuillez confirmer votre adresse mail', body: body}, true);
                 resolve();
             } catch (error) {
