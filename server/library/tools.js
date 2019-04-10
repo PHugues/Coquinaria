@@ -214,5 +214,43 @@ module.exports = {
                 reject(msg);
             }
         });
+    },
+
+    /**
+     * Share a recipe to an other user with his email adress
+     * @param {String} NUMREC ID of the recipe
+     * @param {String} mail Recipient of the recipe
+     */
+    sendRecipe: async function(NUMREC, mail) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let recipe = await this.getRecipe(NUMREC);
+
+                let body = await new Promise((rs, rj) => {
+                    fs.readFile(__dirname + '/../templates/mails/recipe.html', 'utf8', (err, data) => {
+                        if(err) rj(err);
+                        else rs(data);
+                    });
+                });
+
+                body = body.replace("$CATEGORIE", recipe.info.NAMECATREC);
+                body = body.replace("$NAME", recipe.info.LABREC);
+                body = body.replace("$DESCRIPTION", recipe.info.DESREC);
+                body = body.replace("$TEMPS", recipe.info.TPSREC);
+                body = body.replace("$INSTRUCTION", recipe.instruction);
+
+                for(let i = 0 ; i < recipe.ingredients.length ; i++) {
+                    let ing = recipe.ingredients[i];
+                    body = body.replace("$ING", "<li>" + ing["QTEING"] + " " + ing["LABING"] + "</li>" + "<br />$ING");
+                }
+                body = body.replace("$ING", "");
+
+                await _Mail.SendMail({to: mail, subject: 'Recette partagée', body: body}, true)
+                resolve(true);
+            } catch (error) {
+                let msg = `[sendRecipe] ${error.message || error.error || error}`;
+                reject(msg);
+            }
+        });
     }
 }

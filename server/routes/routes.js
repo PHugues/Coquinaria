@@ -25,14 +25,17 @@ router.get('/recettes', user.recipes);
 router.get('/recettes/:cat', user.recipesCat);
 
 // Get a recipe
-router.get('/getRecipe/:id', user.recipe);
+router.get('/getRecipe', user.recipe);
 
 // Remove recipe
-router.post('/removeRecipe/:id', user.removeRecipe);
+router.post('/removeRecipe', user.removeRecipe);
 
 // Modify recipe
-router.get('/modifierRecette/:id', user.modifyRecipe);
-router.post('/modifierRecette/:id', user.modifyRecipe);
+router.get('/modifierRecette', user.modifyRecipe);
+router.post('/modifierRecette', user.modifyRecipe);
+
+// Send recipe through mail
+router.post('/sendRecipe', user.sendRecipe);
 
 // Verifiy the user
 router.get('/verif', user.verifyUser);

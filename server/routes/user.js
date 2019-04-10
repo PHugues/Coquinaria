@@ -144,7 +144,7 @@ module.exports = {
             let token = cookies.token;
             if (token && token != "null") {
                 jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                    if (!err) res.render('recette')
+                    if (!err) res.render('categories')
                 });
             } else {
                 res.redirect('/');
@@ -189,7 +189,7 @@ module.exports = {
 
     removeRecipe: async function(req, res) {
         if(req.method == "POST") {
-            let NUMREC = parseInt(req.params.id);
+            let NUMREC = parseInt(req.query.id);
             await _Tools.removeRecipe(NUMREC);
             res.send(true);
         }
@@ -209,7 +209,7 @@ module.exports = {
         } else if(req.method == "POST") {
             let cookies = cookie.parse(req.headers.cookie || '');
             let personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-            let NUMREC = parseInt(req.params.id);
+            let NUMREC = parseInt(req.query.id);
             let data = req.body;
             data["NUMREC"] = NUMREC;
             data["NUMUSR"] = personn.NUMUSR;
@@ -220,17 +220,23 @@ module.exports = {
 
     recipe: async function(req, res) {
         if(req.method == "GET") {  
-            let NUMREC = req.params.id;
+            let NUMREC = req.query.id;
             let data = await _Tools.getRecipe(NUMREC);
             res.send(data);
         }
     },
 
     verifyUser: async function(req, res) {
-        if(req.method =="GET") {
+        if(req.method == "GET") {
             await _Request.ExecSql("UPDATE USER SET ACTIVE=1 WHERE MAILID=?", [req.query.id]);
             await _Request.ExecSql("UPDATE USER SET MAILID=NULL WHERE MAILID=?", [req.query.id]);
             res.redirect('/');
+        }
+    },
+
+    sendRecipe: async function(req, res) {
+        if(req.method == "POST") {
+            res.send(await _Tools.sendRecipe(req.query.id, req.query.mail));
         }
     }
 }

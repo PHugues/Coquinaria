@@ -78,8 +78,8 @@
 	<script>
 		$(document).ready(function () {
 			$('#header').load('/navbar.html');
-			$("form").attr("action", location.pathname.split('/')[2]);
-			var url = "/getRecipe/" + location.pathname.split('/')[2];
+			$("form").attr("action", location.search);
+			let url = "/getRecipe" + location.search;
             $.get(url, function(data) {
                 if(data) {
 					//Refill the fields
@@ -90,8 +90,8 @@
 					$("[name='inst']").val(data.instruction);
 					
 					// Add the ingredients
-                    for(var i = 0 ; i < data.ingredients.length ; i++) {
-                        var ing = data.ingredients[i];
+                    for(let i = 0 ; i < data.ingredients.length ; i++) {
+                        let ing = data.ingredients[i];
                         $("[name='qte_ing']:eq(" + i + ")").val(ing["QTEING"]);
 						$("[name='nom_ing']:eq(" + i + ")").val(ing["LABING"]);
 						if(i < (data.ingredients.length -1)) {
@@ -105,7 +105,7 @@
 		});
 		
 		$('#add_ing').click(function () {
-			var html =
+			let html =
 				"<input type=\"text\" name=\"qte_ing\" placeholder=\"3\" size=\"2\" required/>	<input type=\"text\" name=\"nom_ing\" placeholder=\"courgettes\" required/>" +
 				"<br /><br />";
 			$('#ing').append(html);
