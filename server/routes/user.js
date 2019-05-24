@@ -182,7 +182,7 @@ module.exports = {
     },
 
     modifyRecipe: function(req, res) {
-        if(req.method =="GET") {
+        if(req.method == "GET") {
             let cookies = cookie.parse(req.headers.cookie || '');
             let token = cookies.token;
             if (token && token != "null") {

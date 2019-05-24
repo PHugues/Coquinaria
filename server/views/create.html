@@ -41,7 +41,7 @@
 				<select class="form-control" name="cat_rec">
 					<option value="entrees">Entrées</option>
 					<option value="plats">Plats</option>
-					<option value="biscuits">Biscuits</option>
+					<option value="desserts">Desserts</option>
 					<option value="gateaux">Gâteaux</option>
 					<option value="boulangerie">Boulangerie</option>
 					<option value="sauces">Sauces</option>
@@ -61,6 +61,7 @@
 			<div class="form-group" id="ing">
 				- Ingrédients : <br /><br />
 				<button type="button" id="add_ing" class="btn btn-secondary">Ajouter nouvel ingrédient</button>
+				<button type="button" id="supp_ing" class="btn btn-secondary">Supprimer ingrédient</button>
 				<br /><br />
 				<input type="text" name="qte_ing" placeholder="3" size="2" required /> <input type="text" name="nom_ing"
 				 placeholder="courgettes" required />
@@ -83,6 +84,9 @@
 				"<input type=\"text\" name=\"qte_ing\" placeholder=\"3\" size=\"2\" required/>	<input type=\"text\" name=\"nom_ing\" placeholder=\"courgettes\" required/>" +
 				"<br /><br />";
 			$('#ing').append(html);
+		});
+		$('#supp_ing').click(function() {
+			$("#ing :nth-last-child(-n+4)").remove();
 		});
 	</script>
 </body>
