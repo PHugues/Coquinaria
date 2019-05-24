@@ -15,3 +15,8 @@ Object.prototype.isEmpty = function() {
     }
     return true;
 }
+
+String.IsNullOrEmpty = function(str) {
+    if((str === null) || (str === "") || (str === undefined) || str.length < 1) return true;
+    return false;
+}

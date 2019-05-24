@@ -1,3 +1,14 @@
 #instructions {
     white-space: pre-wrap;
 }
+
+#buttons {
+    width: 250px;
+}
+
+@media screen and (max-width: 800px) {
+
+    #deleteRecipe, #modifyRecipe, #sendRecipe {
+        display: none;
+    }
+}

@@ -160,26 +160,12 @@ module.exports = {
             let cookies = cookie.parse(req.headers.cookie || '');
             let token = cookies.token;
             let personn = cookies.personn ? JSON.parse(cookies.personn) : {};
-            if (token && token != "null") {
+            if (token && token != "null" && !String.IsNullOrEmpty(categorie)) {
                 jwt.verify(token, process.env.SECRET_KEY, async function(err) {
                     if (!err) {
                         let result = await _Tools.getRecipes(catRecipe, personn.NUMUSR);
                         res.render('recipes', {data: result, title: categorie.capitalize()});
                     }
-                });
-            } else {
-                res.redirect('/');
-            }
-        }
-    },
-
-    menu: function(req, res) {
-        if(req.method =="GET") {
-            let cookies = cookie.parse(req.headers.cookie || '');
-            let token = cookies.token;
-            if (token && token != "null") {
-                jwt.verify(token, process.env.SECRET_KEY, function(err) {
-                    if (!err) res.render('menu')
                 });
             } else {
                 res.redirect('/');

@@ -4,13 +4,13 @@ module.exports = {
     /**
      * Send an email
      * @param {Object} params Necessary parameters to send the mail
-     * - from : Sender of the mail
-     * - to : Recipient of the mail (Comma separated list or an array)
-     * - cc : Recipient in copy of the mail (Comma separated list or an array)
-     * - bcc : Recipient in hidden copy of the mail (Comma separated list or an array)
-     * - subject: Subject of the mail
-     * - body : Content of the mail
-     * - attachments : Attachments of the mail (Array of attachments which are object). Check the wiki for more informations
+     * @param {String} params.from Sender of the mail
+     * @param {String|Array<String>} params.to Recipient of the mail (Comma separated list or an array)
+     * @param {String|Array<String>} params.cc Recipient in copy of the mail (Comma separated list or an array)
+     * @param {String|Array<String>} params.bcc Recipient in hidden copy of the mail (Comma separated list or an array)
+     * @param {String} params.subjec Subject of the mail
+     * @param {String} params.body Content of the mail
+     * @param {*} params.attachments Attachments of the mail (Array of attachments which are object). Check the wiki for more informations
      * @param {Boolean} isHtml If the content is html
      */
     SendMail: function(params, isHtml, onComplete) {

@@ -40,9 +40,6 @@ router.post('/sendRecipe', user.sendRecipe);
 // Verifiy the user
 router.get('/verif', user.verifyUser);
 
-// Display the menu
-router.get('/menu', user.menu);
-
 // Logout of the app
 router.get('/deconnexion', user.logout);
 

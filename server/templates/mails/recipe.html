@@ -1,8 +1,63 @@
-<h1>$CATEGORIE</h1>
-<h3>$NAME</h3>
-<h6>$DESCRIPTION</h6>
-<h6>$TEMPS</h6>
-<ul>
-    $ING
-</ul>
-<p>$INSTRUCTION</p>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <style>
+        ul {
+            list-style-type: none;
+        }
+
+        .coloredDiv {
+            background-color: #EEE;
+            border: 1px solid #EEE;
+            border-radius: 25px;
+            padding-left: 20px;
+        }
+
+        .left {
+            float: left;
+            max-width: 20%;
+        }
+
+        .right {
+            float: left;
+            margin-left: 30px;
+            max-width: 50%;
+        }
+
+        #container {
+            display: inline-block;
+        }
+
+        .bigger {
+            font-size: 1.1em;
+            text-align: justify;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="coloredDiv">
+        <h1>$CATEGORIE : $NAME</h1>
+    </div>
+    <br>
+    <p class="bigger">$DESCRIPTION</p>
+    <p class="bigger">Temps de préparation : $TEMPS minutes</p>
+    <div id="container">
+        <div class="left">
+            <h3 class="coloredDiv">Ingrédients</h3>
+            <ul>
+                $ING
+            </ul>
+        </div>
+        <div class="right">
+            <h3 class="coloredDiv">Préparation</h3>
+            <p>
+                $INSTRUCTION
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

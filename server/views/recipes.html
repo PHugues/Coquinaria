@@ -67,11 +67,19 @@
                     <td>
                         <%= data[i]["DESREC"]%>
                     </td>
-                    <td>
-                        <a class="btn btn-primary" href="#recipe" onclick="return displayRecipe(<%= i%>);"><i class="fa fa-search"></i></a>
-                        <a class="btn btn-danger" href="" onclick="return deleteRecipe(<%= i%>);"><i class="fa fa-trash"></i></a>
-                        <a class="btn btn-secondary" href="/modifierRecette?id=<%= data[i]["NUMREC"]%>"><i class="fa fa-pen"></i></a>
-                        <a class="btn btn-dark" href="" onclick="return sendRecipe(<%= i%>);"><i class="fa fa-envelope"></i></a>
+                    <td id="buttons">
+                        <a title="Voir la recette en détail" class="btn btn-primary" id="displayRecipe" href="#recipe" onclick="return displayRecipe(<%= i%>);">
+                            <i class="fa fa-search"></i>
+                        </a>
+                        <a title="Supprimer la recette" class="btn btn-danger" id="deleteRecipe" href="" onclick="return deleteRecipe(<%= i%>);">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                        <a title="Modifier la recette" class="btn btn-secondary" id="modifyRecipe" href="/modifierRecette?id=<%= data[i]["NUMREC"]%>">
+                            <i class="fa fa-pen"></i>
+                        </a>
+                        <a title="Envoyer la recette par mail" class="btn btn-dark" id="sendRecipe" href="" onclick="return sendRecipe(<%= i%>);">
+                            <i class="fa fa-envelope"></i>
+                        </a>
                     </td>
                 </tr>
                 <% }

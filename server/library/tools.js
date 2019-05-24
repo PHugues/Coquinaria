@@ -15,7 +15,7 @@ module.exports = {
             let user = await _Request.FillDataRow(sql, params);
             return user;
         } catch (error) {
-            let msg = `[exist] ${error.message || error.error || error}`;
+            let msg = `[getUser] ${error.message || error.error || error}`;
             logger.error(msg);
             return msg;
         }
@@ -233,15 +233,15 @@ module.exports = {
                     });
                 });
 
-                body = body.replace("$CATEGORIE", recipe.info.NAMECATREC);
+                body = body.replace("$CATEGORIE", recipe.info.NAMECATREC.toUpperCase());
                 body = body.replace("$NAME", recipe.info.LABREC);
                 body = body.replace("$DESCRIPTION", recipe.info.DESREC);
                 body = body.replace("$TEMPS", recipe.info.TPSREC);
-                body = body.replace("$INSTRUCTION", recipe.instruction);
+                body = body.replace("$INSTRUCTION", recipe.instruction.replace(/\n/gmi, "<br />"));
 
                 for(let i = 0 ; i < recipe.ingredients.length ; i++) {
                     let ing = recipe.ingredients[i];
-                    body = body.replace("$ING", "<li>" + ing["QTEING"] + " " + ing["LABING"] + "</li>" + "<br />$ING");
+                    body = body.replace("$ING", "<li>" + ing["QTEING"] + " " + ing["LABING"] + "</li>" + `<hr width="100%" size=1 align="left">$ING`);
                 }
                 body = body.replace("$ING", "");
 
