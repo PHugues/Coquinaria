@@ -12,7 +12,7 @@ app.use(require('./routes/routes'));
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('.html', require('ejs').__express);
-app.set('views', __dirname + '/views');
+app.set('views', __dirname + '/public/views');
 app.set('view engine', 'html');
 app.set('trust proxy', true);
 
